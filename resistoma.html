@@ -144,25 +144,35 @@
     // excesivos o inactivos. Así evitamos copiar dieciocho tratamientos en
     // cada encuentro y reducimos errores al ampliar la campaña.
     const CATALOGO_TERAPIAS = [
-      { id: "ampicilina", nombre: "Ampicilina", presion: 2, toxicidad: 0 },
-      { id: "cefazolina", nombre: "Cefazolina · 1.ª", presion: 3, toxicidad: 0 },
-      { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", presion: 4, toxicidad: 0 },
-      { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", presion: 9, toxicidad: 0 },
-      { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", presion: 10, toxicidad: 0 },
-      { id: "cefepima", nombre: "Cefepima · 4.ª", presion: 13, toxicidad: 1 },
-      { id: "piptazo", nombre: "Piperacilina-tazobactam", presion: 14, toxicidad: 0 },
-      { id: "ertapenem", nombre: "Ertapenem", presion: 18, toxicidad: 1 },
-      { id: "meropenem", nombre: "Meropenem", presion: 20, toxicidad: 1 },
-      { id: "cza", nombre: "Ceftazidima-avibactam", presion: 25, toxicidad: 2 },
-      { id: "mvb", nombre: "Meropenem-vaborbactam", presion: 28, toxicidad: 2 },
-      { id: "irl", nombre: "Imipenem-relebactam", presion: 28, toxicidad: 3 },
-      { id: "cefiderocol", nombre: "Cefiderocol", presion: 32, toxicidad: 3 },
-      { id: "atmcza", nombre: "Aztreonam + CZA", presion: 30, toxicidad: 4 },
-      { id: "amikacina", nombre: "Amikacina", presion: 8, toxicidad: 18 },
-      { id: "fosfomicina", nombre: "Fosfomicina oral", presion: 3, toxicidad: 1 },
-      { id: "nitrofurantoina", nombre: "Nitrofurantoína", presion: 2, toxicidad: 1 },
-      { id: "polimixina", nombre: "Polimixina B / colistina", presion: 20, toxicidad: 28 }
+      { id: "ampicilina", nombre: "Ampicilina", presion: 2, toxicidad: 0, espectro: "Aminopenicilina de espectro estrecho. Hidrolizada por cualquier β-lactamasa." },
+      { id: "cefazolina", nombre: "Cefazolina · 1.ª", presion: 3, toxicidad: 0, espectro: "Cefalosporina de 1.ª generación, espectro estrecho. Sin estabilidad frente a BLEE/AmpC." },
+      { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", presion: 4, toxicidad: 0, espectro: "Cefalosporina de 2.ª generación, espectro algo más amplio. Igual de vulnerable a BLEE/AmpC." },
+      { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", presion: 9, toxicidad: 0, espectro: "Cefalosporina de 3.ª generación de amplio uso. Blanco típico de BLEE y AmpC." },
+      { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", presion: 10, toxicidad: 0, espectro: "3.ª generación con buena cobertura antipseudomónica. También vulnerable a BLEE/AmpC." },
+      { id: "cefepima", nombre: "Cefepima · 4.ª", presion: 13, toxicidad: 1, espectro: "4.ª generación, más estable frente a AmpC. Hidrolizada por BLEE/carbapenemasas." },
+      { id: "piptazo", nombre: "Piperacilina-tazobactam", presion: 14, toxicidad: 0, espectro: "Ureidopenicilina + inhibidor clásico. Protección limitada frente a AmpC/BLEE en infección invasiva." },
+      { id: "ertapenem", nombre: "Ertapenem", presion: 18, toxicidad: 1, espectro: "Carbapenémico sin cobertura antipseudomónica. Activo frente a BLEE/AmpC." },
+      { id: "meropenem", nombre: "Meropenem", presion: 20, toxicidad: 1, espectro: "Carbapenémico de espectro amplio, incluida Pseudomonas. Activo frente a BLEE/AmpC; hidrolizado por carbapenemasas." },
+      { id: "cza", nombre: "Ceftazidima-avibactam", presion: 25, toxicidad: 2, espectro: "Avibactam inhibe BLEE, AmpC, KPC y OXA-48-like. No actúa sobre metalo-β-lactamasas (MBL)." },
+      { id: "mvb", nombre: "Meropenem-vaborbactam", presion: 28, toxicidad: 2, espectro: "Vaborbactam inhibe KPC de forma potente. Sin actividad útil frente a MBL u OXA-48-like." },
+      { id: "irl", nombre: "Imipenem-relebactam", presion: 28, toxicidad: 3, espectro: "Relebactam inhibe KPC y algo de AmpC. No cubre MBL; actividad limitada en OXA-48-like." },
+      { id: "cefiderocol", nombre: "Cefiderocol", presion: 32, toxicidad: 3, espectro: "Sideróforo que evade porinas/eflujo. Activo frente a MBL, KPC y OXA-48-like: reserva de amplio espectro." },
+      { id: "atmcza", nombre: "Aztreonam + CZA", presion: 30, toxicidad: 4, espectro: "Aztreonam resiste MBL pero no BLEE/AmpC acompañante; avibactam lo protege de esas enzimas." },
+      { id: "amikacina", nombre: "Amikacina", presion: 8, toxicidad: 18, espectro: "Aminoglucósido. Buena actividad Gram negativa; nefro/ototoxicidad limita la monoterapia." },
+      { id: "fosfomicina", nombre: "Fosfomicina oral", presion: 3, toxicidad: 1, espectro: "Concentración útil solo en orina. No sirve para bacteriemia ni infección profunda." },
+      { id: "nitrofurantoina", nombre: "Nitrofurantoína", presion: 2, toxicidad: 1, espectro: "Solo cistitis: no alcanza parénquima renal ni concentración sérica útil." },
+      { id: "polimixina", nombre: "Polimixina B / colistina", presion: 20, toxicidad: 28, espectro: "Última línea frente a Gram negativos extremadamente resistentes. Nefro/neurotoxicidad alta." }
     ];
+
+    // Descripción genérica por fármaco, independiente del caso: se usa como
+    // línea contextual en el menú FIGHT antes de administrar nada. Se indexa
+    // por id porque varios encuentros declaran su propio arreglo `terapias`
+    // (no siempre pasa por crearTerapiasSusceptibles) pero reutilizan los
+    // mismos ids del catálogo.
+    const ESPECTRO_POR_ID = CATALOGO_TERAPIAS.reduce(function (mapa, farmaco) {
+      mapa[farmaco.id] = farmaco.espectro;
+      return mapa;
+    }, {});
 
     function crearTerapiasSusceptibles(configuracion) {
       const clases = ["optima", "razonable", "inactiva", "foco", "toxicidad"];
@@ -206,6 +216,23 @@
       { id: "EFLUJO", nombre: "Sobreexpresión de bombas de eflujo" }
     ];
 
+    // Descripción breve y genérica por mecanismo (independiente del caso),
+    // para orientar al menú MERCY antes de declarar una hipótesis. Cubre
+    // también ids usados solo en algunos encuentros (AmpC / AmpC_desreprimida).
+    const DESCRIPCIONES_MECANISMOS = {
+      FENOTIPO_BASAL: "Sin enzima adquirida: explica solo resistencias intrínsecas esperadas de la especie.",
+      BLEE: "β-lactamasa plasmídica que hidroliza cefalosporinas de 3.ª/4.ª; inhibida por clavulanato.",
+      AmpC: "β-lactamasa cromosómica o plasmídica que hidroliza cefalosporinas; no inhibida por clavulanato.",
+      AmpC_inducible: "AmpC cromosómica con potencial de desreprimirse durante el tratamiento.",
+      AmpC_desreprimida: "AmpC cromosómica ya expresada establemente en alto nivel.",
+      AmpC_plasmidica: "AmpC transferida por plásmido a una especie sin AmpC cromosómica propia.",
+      KPC: "Carbapenemasa de serina clase A; inhibida por avibactam, vaborbactam y relebactam.",
+      MBL: "Metalo-β-lactamasa clase B dependiente de zinc; NO inhibida por avibactam/vaborbactam/relebactam.",
+      OXA48: "Carbapenemasa de serina clase D; inhibida por avibactam, no por vaborbactam/relebactam.",
+      PORINAS: "Pérdida de porinas (± BLEE/AmpC) que reduce la entrada de carbapenémicos sin ser una carbapenemasa.",
+      EFLUJO: "Bombas de expulsión activa que sacan el fármaco antes de que actúe; afecta varias clases a la vez."
+    };
+
     function crearPruebasFenotipoBasal(detalle) {
       return [
         {
@@ -245,6 +272,26 @@
         }
       ];
     }
+
+    // Qué mide cada prueba, en abstracto (todos los encuentros reutilizan
+    // estos mismos 5 ids aunque el resultado concreto cambie por caso).
+    const DESCRIPCIONES_PRUEBAS = {
+      doble_disco: "Busca sinergia con clavulanato: un halo agrandado sugiere BLEE.",
+      mcim_ecim: "mCIM detecta actividad carbapenemasa; eCIM distingue serina de metalo-enzima (MBL).",
+      apba_edta: "APBA inhibe serina-β-lactamasas (KPC/AmpC); EDTA quela zinc e inhibe MBL.",
+      inmunocromatografia: "Detección rápida por anticuerpos de KPC, NDM, VIM, IMP y OXA-48-like.",
+      pcr: "Confirmación genotípica de los genes de carbapenemasa más frecuentes.",
+      ast_control: "Repite el antibiograma tras exposición, para ver si el fenotipo cambió con el tratamiento."
+    };
+
+    // Qué logra cada medida sobre el paciente, en abstracto (los 4 ids son
+    // fijos; el mensaje concreto de cada caso puede variar según si aplica).
+    const DESCRIPCIONES_ITEMS = {
+      foco: "Busca y controla la fuente de la infección (absceso, obstrucción, colección).",
+      cateter: "Evalúa si un catéter o dispositivo es la fuente y lo retira si corresponde.",
+      pkpd: "Ajusta dosis/infusión a peso, función renal y sitio para asegurar exposición eficaz.",
+      aislamiento: "Aplica precauciones de aislamiento según el fenotipo y la política institucional."
+    };
 
     const ENCUENTROS_SUSCEPTIBLES = [{
       id: "ecoli_cistitis_sensible",
@@ -1550,6 +1597,9 @@
         corazon: { x: ANCHO / 2, y: 390, ancho: 18, alto: 16, invulnerable: 0 },
         resumen: null,
         modoPractica: false,
+        reaccionBurlaHasta: 0,
+        golpeHasta: 0,
+        mecanismosDescartados: [],
         inicioEncuentroMs: performance.now()
       };
     }
@@ -1665,7 +1715,8 @@
           presionada: { ojos: [[10, 6], [18, 6]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
           evolucionando: { ojos: [[9, 5], [10, 5], [18, 5], [19, 5]], boca: [[12, 9], [13, 8], [14, 9], [15, 8], [16, 9]] },
           derrotada: { ojosX: [[9, 5], [10, 6], [9, 6], [10, 5], [18, 5], [19, 6], [18, 6], [19, 5]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
-          perdonada: { ojos: [[9, 6], [10, 6], [18, 6], [19, 6]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] }
+          perdonada: { ojos: [[9, 6], [10, 6], [18, 6], [19, 6]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] },
+          burlona: { ojos: [[10, 5], [17, 5], [18, 5]], boca: [[12, 10], [13, 10], [14, 9], [15, 8], [16, 7]] }
         }
       },
       enterobacter: {
@@ -1692,7 +1743,8 @@
           presionada: { ojos: [[9, 6], [17, 6]], boca: [[11, 10], [12, 9], [13, 9], [14, 9], [15, 10]] },
           evolucionando: { ojos: [[8, 5], [9, 5], [17, 5], [18, 5]], boca: [[11, 9], [12, 8], [13, 9], [14, 8], [15, 9]] },
           derrotada: { ojosX: [[8, 5], [9, 6], [8, 6], [9, 5], [17, 5], [18, 6], [17, 6], [18, 5]], boca: [[11, 10], [12, 9], [13, 9], [14, 9], [15, 10]] },
-          perdonada: { ojos: [[8, 6], [9, 6], [17, 6], [18, 6]], boca: [[11, 9], [12, 10], [13, 10], [14, 10], [15, 9]] }
+          perdonada: { ojos: [[8, 6], [9, 6], [17, 6], [18, 6]], boca: [[11, 9], [12, 10], [13, 10], [14, 10], [15, 9]] },
+          burlona: { ojos: [[9, 5], [16, 5], [17, 5]], boca: [[11, 10], [12, 10], [13, 9], [14, 8], [15, 7]] }
         }
       },
       klebsiella: {
@@ -1719,7 +1771,8 @@
           presionada: { ojos: [[9, 6], [17, 6]], boca: [[11, 10], [12, 9], [13, 9], [14, 9], [15, 10]] },
           evolucionando: { ojos: [[8, 5], [9, 5], [17, 5], [18, 5]], boca: [[11, 9], [12, 8], [13, 9], [14, 8], [15, 9]] },
           derrotada: { ojosX: [[8, 5], [9, 6], [8, 6], [9, 5], [17, 5], [18, 6], [17, 6], [18, 5]], boca: [[11, 10], [12, 9], [13, 9], [14, 9], [15, 10]] },
-          perdonada: { ojos: [[8, 6], [9, 6], [17, 6], [18, 6]], boca: [[11, 9], [12, 10], [13, 10], [14, 10], [15, 9]] }
+          perdonada: { ojos: [[8, 6], [9, 6], [17, 6], [18, 6]], boca: [[11, 9], [12, 10], [13, 10], [14, 10], [15, 9]] },
+          burlona: { ojos: [[9, 5], [16, 5], [17, 5]], boca: [[11, 10], [12, 10], [13, 9], [14, 8], [15, 7]] }
         }
       },
       proteus: {
@@ -1745,7 +1798,8 @@
           presionada: { ojos: [[10, 6], [20, 6]], boca: [[13, 10], [14, 9], [15, 9], [16, 9], [17, 10]] },
           evolucionando: { ojos: [[9, 5], [10, 5], [20, 5], [21, 5]], boca: [[13, 9], [14, 8], [15, 9], [16, 8], [17, 9]] },
           derrotada: { ojosX: [[9, 5], [10, 6], [9, 6], [10, 5], [20, 5], [21, 6], [20, 6], [21, 5]], boca: [[13, 10], [14, 9], [15, 9], [16, 9], [17, 10]] },
-          perdonada: { ojos: [[9, 6], [10, 6], [20, 6], [21, 6]], boca: [[13, 9], [14, 10], [15, 10], [16, 10], [17, 9]] }
+          perdonada: { ojos: [[9, 6], [10, 6], [20, 6], [21, 6]], boca: [[13, 9], [14, 10], [15, 10], [16, 10], [17, 9]] },
+          burlona: { ojos: [[10, 5], [19, 5], [20, 5]], boca: [[13, 10], [14, 10], [15, 9], [16, 8], [17, 7]] }
         }
       },
       citrobacter: {
@@ -1771,7 +1825,8 @@
           presionada: { ojos: [[9, 6], [19, 6]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
           evolucionando: { ojos: [[8, 5], [9, 5], [19, 5], [20, 5]], boca: [[12, 9], [13, 8], [14, 9], [15, 8], [16, 9]] },
           derrotada: { ojosX: [[8, 5], [9, 6], [8, 6], [9, 5], [19, 5], [20, 6], [19, 6], [20, 5]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
-          perdonada: { ojos: [[8, 6], [9, 6], [19, 6], [20, 6]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] }
+          perdonada: { ojos: [[8, 6], [9, 6], [19, 6], [20, 6]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] },
+          burlona: { ojos: [[9, 5], [18, 5], [19, 5]], boca: [[12, 10], [13, 10], [14, 9], [15, 8], [16, 7]] }
         }
       },
       serratia: {
@@ -1797,10 +1852,60 @@
           presionada: { ojos: [[10, 6], [20, 6]], boca: [[13, 10], [14, 9], [15, 9], [16, 9], [17, 10]] },
           evolucionando: { ojos: [[9, 5], [10, 5], [20, 5], [21, 5]], boca: [[13, 9], [14, 8], [15, 9], [16, 8], [17, 9]] },
           derrotada: { ojosX: [[9, 5], [10, 6], [9, 6], [10, 5], [20, 5], [21, 6], [20, 6], [21, 5]], boca: [[13, 10], [14, 9], [15, 9], [16, 9], [17, 10]] },
-          perdonada: { ojos: [[9, 6], [10, 6], [20, 6], [21, 6]], boca: [[13, 9], [14, 10], [15, 10], [16, 10], [17, 9]] }
+          perdonada: { ojos: [[9, 6], [10, 6], [20, 6], [21, 6]], boca: [[13, 9], [14, 10], [15, 10], [16, 10], [17, 9]] },
+          burlona: { ojos: [[10, 5], [19, 5], [20, 5]], boca: [[13, 10], [14, 10], [15, 9], [16, 8], [17, 7]] }
         }
       }
     };
+
+    // Frases desenfadadas/sarcásticas de la bacteria cuando el jugador se
+    // equivoca. Es tono de flavor, no clínico: nunca sustituye ni contradice
+    // la retroalimentación seria (antibiograma, mecanismo, tratamiento), solo
+    // se agrega después de ella. Cada especie tiene su propio banco; si no
+    // hay una entrada para la categoría exacta, se usa "generica".
+    const BURLAS_BACTERIA = {
+      generica: {
+        mecanismoIncorrecto: [
+          "Ni mis propios plásmidos se creyeron esa hipótesis.",
+          "Bonita teoría. Totalmente ajena a mi genoma, pero bonita.",
+          "Sigue adivinando, tengo toda una colonia esperando turno."
+        ],
+        tratamientoInactivo: [
+          "Gracias por el antibiótico, lo voy a coleccionar.",
+          "¿Eso era el ataque? Ni cosquillas.",
+          "Mis enzimas te mandan saludos."
+        ],
+        tratamientoExceso: [
+          "Wow, un cañón para una sombra. Halagada.",
+          "Podrías haberme ganado gastando menos artillería, ¿sabes?",
+          "Impresionante espectro... totalmente innecesario aquí."
+        ],
+        toxicidad: [
+          "Ouch para el paciente, cosquillas para mí.",
+          "Ese fármaco le va a doler más al riñón que a mí."
+        ],
+        foco: [
+          "Puedes tratarme, pero el foco sigue sembrando refuerzos.",
+          "Mientras no controles la fuente, siempre hay más de nosotras."
+        ],
+        itemErroneo: [
+          "Esa medida no iba conmigo, pero el susto se lo llevó el paciente.",
+          "Actuar por actuar tampoco es gratis, ¿sabes?"
+        ]
+      },
+      ecoli: { mecanismoIncorrecto: ["Soy E. coli, no una adivinanza de examen."] },
+      klebsiella: { mecanismoIncorrecto: ["Mi cápsula te dio una pista y aun así fallaste."] },
+      enterobacter: { mecanismoIncorrecto: ["¿Ya viste qué especie soy? Eso ya era una pista."] },
+      proteus: { mecanismoIncorrecto: ["Mientras dudas, yo sigo subiendo por la vía urinaria."] },
+      citrobacter: { mecanismoIncorrecto: ["Hoy soy sensible; mañana, quién sabe."] },
+      serratia: { mecanismoIncorrecto: ["Elegante, resistente y con tiempo de sobra."] }
+    };
+
+    function elegirBurla(categoria, spriteId) {
+      const bancoEspecie = BURLAS_BACTERIA[spriteId] || {};
+      const opciones = bancoEspecie[categoria] || BURLAS_BACTERIA.generica[categoria] || BURLAS_BACTERIA.generica.mecanismoIncorrecto;
+      return elegirAleatorio(opciones);
+    }
 
     function dibujarMatriz(matriz, x, y, escala, color) {
       contexto.fillStyle = color;
@@ -1821,6 +1926,7 @@
       if (estadoJuego.perdonada) return "perdonada";
       if (estadoJuego.derrotada) return "derrotada";
       if (estadoJuego.ampcDesreprimida || (estadoJuego.evolucionada && estadoJuego.presionSelectiva >= 96)) return "evolucionando";
+      if (estadoJuego.reaccionBurlaHasta > performance.now()) return "burlona";
       if (estadoJuego.cargaBacteriana < 65 || estadoJuego.presionSelectiva > 45) return "presionada";
       return "sana";
     }
@@ -1835,8 +1941,16 @@
       const columnas = Math.max.apply(null, sprite.matriz.map(function (fila) { return fila.length; }));
       const ancho = columnas * escalaActual;
       const alto = sprite.matriz.length * escalaActual;
-      const origenX = x - ancho / 2;
-      const origenY = y - alto / 2;
+      // Micro-animación de "respiración": una idea barata pero muy efectiva
+      // para que un sprite estático se perciba vivo. Se atenúa con
+      // prefers-reduced-motion en vez de desactivarse del todo (no es
+      // parpadeo ni movimiento brusco, solo un balanceo de 2-3px).
+      const amplitudReposo = 2.4 * factorMovimiento();
+      const tiempo = performance.now();
+      const bobY = Math.sin(tiempo / 480) * amplitudReposo;
+      const bobX = Math.sin(tiempo / 700 + 1.3) * (amplitudReposo * 0.5);
+      const origenX = x - ancho / 2 + bobX;
+      const origenY = y - alto / 2 + bobY;
 
       contexto.strokeStyle = COLOR.medio;
       contexto.lineWidth = Math.max(2, escalaActual / 2.5);
@@ -1976,6 +2090,32 @@
       return limitar(1 + Math.floor(calcularAmenazaPorcentual() / 20), 1, 6);
     }
 
+    // Desglose legible de qué está empujando la amenaza clínica hacia arriba,
+    // en vez de dejar un único porcentaje opaco. Los mismos términos que usa
+    // calcularAmenazaPorcentual(), en el mismo orden, para que sea auditable.
+    function obtenerDesgloseAmenaza() {
+      const dificultad = CONTENIDO_CLINICO.encuentro.dificultad || {};
+      const amenazaBase = dificultad.amenazaBase || 8;
+      const componenteMayor = Math.max(estadoJuego.presionSelectiva, estadoJuego.toxicidad);
+      const componenteMenor = Math.min(estadoJuego.presionSelectiva, estadoJuego.toxicidad);
+      const cargaFarmacologica = Math.round(componenteMayor * 0.60 + componenteMenor * 0.30);
+      const cargaPorErrores = estadoJuego.erroresClinicos * 4;
+      const partes = ["Base " + amenazaBase];
+      if (cargaFarmacologica > 0) partes.push("Fármacos " + cargaFarmacologica);
+      if (cargaPorErrores > 0) partes.push("Errores " + cargaPorErrores);
+      return partes.join(" + ");
+    }
+
+    // Etapa nombrada del deterioro del paciente: hace legible el umbral en
+    // vez de dejar solo un número y una barra.
+    function obtenerEtapaDeterioro() {
+      const vida = estadoJuego.vidaPaciente;
+      if (vida >= 85) return { etiqueta: "ESTABLE", color: COLOR.exito };
+      if (vida >= 60) return { etiqueta: "DETERIORO LEVE", color: COLOR.medio };
+      if (vida >= 35) return { etiqueta: "DETERIORO MODERADO", color: COLOR.alerta };
+      return { etiqueta: "CRÍTICO", color: COLOR.alerta };
+    }
+
     // Los errores clínicos endurecen el siguiente ataque. Las pruebas razonables
     // consumen créditos, pero no aumentan por sí solas la dificultad motora.
     function registrarErrorClinico(motivo) {
@@ -1983,6 +2123,16 @@
       estadoJuego.motivosErrores.push(motivo);
       estadoJuego.decisiones.push("Error clínico: " + motivo);
       return "AMENAZA " + calcularAmenazaPorcentual() + "%: " + motivo + ".";
+    }
+
+    // Flavor no clínico: una línea sarcástica de la bacteria tras un error,
+    // siempre añadida DESPUÉS de la retroalimentación seria, nunca en su
+    // lugar. También dispara brevemente la expresión "burlona" del sprite.
+    function activarBurla(categoria) {
+      estadoJuego.reaccionBurlaHasta = performance.now() + 1600;
+      const spriteId = CONTENIDO_CLINICO.encuentro.spriteId;
+      const microorganismo = CONTENIDO_CLINICO.encuentro.microorganismo;
+      return "🦠 " + microorganismo + ": \"" + elegirBurla(categoria, spriteId) + "\"";
     }
 
     function iniciarJuego() {
@@ -2227,12 +2377,16 @@
           estadoJuego.puntosInferencia = Math.max(0, 30 - estadoJuego.penalizacionInferencia);
         }
         estadoJuego.vidaPaciente -= 5;
+        if (!estadoJuego.mecanismosDescartados.includes(mecanismoId)) {
+          estadoJuego.mecanismosDescartados.push(mecanismoId);
+        }
         const alertaAmenaza = registrarErrorClinico("el mecanismo declarado no explica el fenotipo");
         finalizarAccion([
           "HIPÓTESIS INCONSISTENTE.",
           CONTENIDO_CLINICO.encuentro.pistaHipotesisIncorrecta,
           "La hipótesis queda registrada: corregirla no restaurará la puntuación perfecta.",
-          alertaAmenaza
+          alertaAmenaza,
+          activarBurla("mecanismoIncorrecto")
         ], CONTENIDO_CLINICO.encuentro.patronBase);
       }
     }
@@ -2268,13 +2422,16 @@
           );
         }
       }
+      let categoriaBurla = null;
       if (clasesConError.includes(antibiotico.clase)) {
         const nuevaAlerta = registrarErrorClinico("el esquema no es óptimo para este mecanismo y foco");
         alertaAmenaza = alertaAmenaza ? alertaAmenaza + " " + nuevaAlerta : nuevaAlerta;
+        categoriaBurla = { inactiva: "tratamientoInactivo", trampa: "tratamientoInactivo", exceso: "tratamientoExceso", toxicidad: "toxicidad", foco: "foco" }[antibiotico.clase];
       }
       if (escaloSinControlDeFoco) {
         const nuevaAlerta = registrarErrorClinico("se escaló sin haber evaluado control de foco");
         alertaAmenaza = alertaAmenaza ? alertaAmenaza + " " + nuevaAlerta : nuevaAlerta;
+        categoriaBurla = categoriaBurla || "foco";
       }
 
       estadoJuego.tratamientoElegido = antibiotico.id;
@@ -2342,6 +2499,7 @@
         estadoJuego.cargaBacteriana = Math.max(estadoJuego.cargaBacteriana, 58);
         mensajes.push("PRESIÓN SELECTIVA MÁXIMA: la bacteria pierde porinas y activa eflujo. El fenotipo se endurece a mitad del combate.");
       }
+      if (categoriaBurla) mensajes.push(activarBurla(categoriaBurla));
 
       finalizarAccion(
         mensajes,
@@ -2375,6 +2533,7 @@
       estadoJuego.puntosItems = Math.max(0, estadoJuego.puntosItems + item.puntos);
       const mensajes = [item.nombre.toUpperCase(), item.mensaje];
       if (alertaAmenaza) mensajes.push(alertaAmenaza);
+      if (item.puntos < 0) mensajes.push(activarBurla("itemErroneo"));
       finalizarAccion(mensajes, CONTENIDO_CLINICO.encuentro.patronBase);
     }
 
@@ -2895,6 +3054,10 @@
       if (Math.sqrt(distanciaX * distanciaX + distanciaY * distanciaY) < bala.radio + 9) {
         estadoJuego.vidaPaciente = limitar(estadoJuego.vidaPaciente - bala.dano, 0, 100);
         estadoJuego.corazon.invulnerable = Math.max(400, 650 - calcularAmenazaPorcentual() * 2.2);
+        // Retroalimentación de impacto ("juice"): destello + leve temblor de
+        // cámara, atenuados con prefers-reduced-motion. Puramente visual, no
+        // afecta hitboxes ni puntuación.
+        estadoJuego.golpeHasta = performance.now() + 220 * factorMovimiento();
       }
     }
 
@@ -3067,19 +3230,22 @@
     }
 
     function dibujarPanelesEstado() {
+      const etapa = obtenerEtapaDeterioro();
       dibujarMarco(28, 86, 236, 150, COLOR.tenue, 2);
       dibujarTexto("PACIENTE", 43, 99, 13, COLOR.fuerte);
       dibujarTexto(CONTENIDO_CLINICO.encuentro.paciente.edad, 43, 122, 11, COLOR.principal);
       dibujarTextoEnvuelto(CONTENIDO_CLINICO.encuentro.paciente.sindrome, 43, 141, 205, 11, COLOR.medio, 15, 2);
       dibujarTexto("ESTABILIDAD " + Math.round(estadoJuego.vidaPaciente) + "%", 43, 178, 11, COLOR.principal);
-      dibujarBarra(43, 197, 190, 17, estadoJuego.vidaPaciente, COLOR.fuerte);
+      dibujarTexto(etapa.etiqueta, 228, 178, 10, etapa.color, "right");
+      dibujarBarra(43, 197, 190, 17, estadoJuego.vidaPaciente, etapa.color);
 
       dibujarMarco(696, 86, 236, 150, COLOR.tenue, 2);
       dibujarTexto("AMENAZA CLÍNICA " + calcularAmenazaPorcentual() + "%", 711, 99, 12, COLOR.fuerte);
-      dibujarTexto("CRÉDITOS Dx " + estadoJuego.puntosLaboratorio + "/" + estadoJuego.maximoPuntosLaboratorio, 711, 124, 11, COLOR.principal);
-      dibujarTexto("PRESIÓN " + Math.round(estadoJuego.presionSelectiva) + "%", 711, 149, 11, COLOR.medio);
-      dibujarBarra(711, 166, 190, 15, estadoJuego.presionSelectiva, COLOR.alerta);
-      dibujarTexto("TOXICIDAD " + Math.round(estadoJuego.toxicidad) + "%", 711, 190, 11, COLOR.toxico);
+      dibujarTexto(obtenerDesgloseAmenaza(), 711, 116, 8, COLOR.tenue);
+      dibujarTexto("CRÉDITOS Dx " + estadoJuego.puntosLaboratorio + "/" + estadoJuego.maximoPuntosLaboratorio, 711, 131, 11, COLOR.principal);
+      dibujarTexto("PRESIÓN " + Math.round(estadoJuego.presionSelectiva) + "%", 711, 152, 11, COLOR.medio);
+      dibujarBarra(711, 168, 190, 14, estadoJuego.presionSelectiva, COLOR.alerta);
+      dibujarTexto("TOXICIDAD " + Math.round(estadoJuego.toxicidad) + "%", 711, 191, 11, COLOR.toxico);
       dibujarBarra(711, 207, 190, 11, estadoJuego.toxicidad, COLOR.toxico);
 
       dibujarBacteria(480, 150, 5);
@@ -3186,29 +3352,62 @@
     function obtenerOpcionesMenu() {
       if (estadoJuego.menu === "act") {
         const opcionesLaboratorio = [
-          { nombre: "Revisar antibiograma", accion: revisarAntibiograma },
-          { nombre: "Doble disco · 1 crédito Dx", accion: function () { procesarPrueba("doble_disco"); } },
-          { nombre: "mCIM/eCIM · 2 créditos Dx", accion: function () { procesarPrueba("mcim_ecim"); } },
-          { nombre: "APBA/EDTA · 1 crédito Dx", accion: function () { procesarPrueba("apba_edta"); } },
-          { nombre: "Inmunocromatografía · 2 créditos Dx", accion: function () { procesarPrueba("inmunocromatografia"); } },
-          { nombre: "PCR carbapenemasas · 3 créditos Dx", accion: function () { procesarPrueba("pcr"); } }
+          {
+            nombre: "Revisar antibiograma", accion: revisarAntibiograma,
+            descripcion: "Consulta el reporte de sensibilidad completo. Sin costo.",
+            usado: estadoJuego.antibiogramaRevisado
+          },
+          {
+            nombre: "Doble disco · 1 crédito Dx", accion: function () { procesarPrueba("doble_disco"); },
+            descripcion: DESCRIPCIONES_PRUEBAS.doble_disco, usado: estadoJuego.pruebasRealizadas.includes("doble_disco")
+          },
+          {
+            nombre: "mCIM/eCIM · 2 créditos Dx", accion: function () { procesarPrueba("mcim_ecim"); },
+            descripcion: DESCRIPCIONES_PRUEBAS.mcim_ecim, usado: estadoJuego.pruebasRealizadas.includes("mcim_ecim")
+          },
+          {
+            nombre: "APBA/EDTA · 1 crédito Dx", accion: function () { procesarPrueba("apba_edta"); },
+            descripcion: DESCRIPCIONES_PRUEBAS.apba_edta, usado: estadoJuego.pruebasRealizadas.includes("apba_edta")
+          },
+          {
+            nombre: "Inmunocromatografía · 2 créditos Dx", accion: function () { procesarPrueba("inmunocromatografia"); },
+            descripcion: DESCRIPCIONES_PRUEBAS.inmunocromatografia, usado: estadoJuego.pruebasRealizadas.includes("inmunocromatografia")
+          },
+          {
+            nombre: "PCR carbapenemasas · 3 créditos Dx", accion: function () { procesarPrueba("pcr"); },
+            descripcion: DESCRIPCIONES_PRUEBAS.pcr, usado: estadoJuego.pruebasRealizadas.includes("pcr")
+          }
         ];
         if (CONTENIDO_CLINICO.encuentro.antibiogramaEvolucionado) {
           opcionesLaboratorio.splice(1, 0, {
             nombre: "AST de control tras ceftriaxona · 1 crédito Dx",
-            accion: solicitarAntibiogramaControl
+            accion: solicitarAntibiogramaControl,
+            descripcion: DESCRIPCIONES_PRUEBAS.ast_control,
+            usado: estadoJuego.antibiogramaControlDisponible
           });
         }
         return opcionesLaboratorio;
       }
       if (estadoJuego.menu === "diagnostico") {
         return CONTENIDO_CLINICO.encuentro.mecanismosSeleccionables.map(function (mecanismo) {
-          return { nombre: mecanismo.nombre, accion: function () { declararMecanismo(mecanismo.id); } };
+          return {
+            nombre: mecanismo.nombre,
+            accion: function () { declararMecanismo(mecanismo.id); },
+            descripcion: DESCRIPCIONES_MECANISMOS[mecanismo.id] || "",
+            usado: estadoJuego.mecanismosDescartados.includes(mecanismo.id),
+            marca: estadoJuego.mecanismosDescartados.includes(mecanismo.id) ? "✗ descartada" : ""
+          };
         });
       }
       if (estadoJuego.menu === "fight") {
         return CONTENIDO_CLINICO.encuentro.terapias.map(function (terapia) {
-          return { nombre: terapia.nombre, accion: function () { prepararAntibiotico(terapia.id); } };
+          return {
+            nombre: terapia.nombre,
+            accion: function () { prepararAntibiotico(terapia.id); },
+            descripcion: ESPECTRO_POR_ID[terapia.id] || "",
+            usado: estadoJuego.antibioticosUsados.includes(terapia.nombre),
+            marca: estadoJuego.antibioticosUsados.includes(terapia.nombre) ? "✓ ya administrado" : ""
+          };
         });
       }
       if (estadoJuego.menu === "item") {
@@ -3223,7 +3422,9 @@
         }).map(function (item) {
           return {
             nombre: ordenClinico[item.id] + " · " + item.nombre,
-            accion: function () { procesarItem(item.id); }
+            accion: function () { procesarItem(item.id); },
+            descripcion: DESCRIPCIONES_ITEMS[item.id] || "",
+            usado: estadoJuego.itemsUsados.includes(item.id)
           };
         });
       }
@@ -3250,16 +3451,26 @@
       opciones.forEach(function (opcion, indice) {
         const columna = Math.floor(indice / filas);
         const fila = indice % filas;
+        const marca = opcion.marca || (opcion.usado ? "✓ hecho" : "");
         registrarBoton(
           inicioX + columna * separacionX,
           inicioY + fila * separacionY,
           anchoBoton,
           altoBoton,
-          opcion.nombre,
+          marca ? opcion.nombre + "\n" + marca : opcion.nombre,
           opcion.accion,
-          estadoJuego.seleccion === indice
+          estadoJuego.seleccion === indice,
+          !!opcion.usado
         );
       });
+
+      // Línea contextual: qué hace/mide la opción resaltada (teclado u hover),
+      // independiente del resultado concreto del caso.
+      const opcionActiva = opciones[estadoJuego.seleccion];
+      if (opcionActiva && opcionActiva.descripcion) {
+        dibujarMarco(44, 543, 872, 26, COLOR.tenue, 1);
+        dibujarTexto("ⓘ " + opcionActiva.descripcion, 54, 550, 10, COLOR.medio);
+      }
     }
 
     function dibujarConfirmacionTratamiento() {
@@ -3551,6 +3762,14 @@
       dibujarMarco(ZONA_BALAS.x, ZONA_BALAS.y, ZONA_BALAS.ancho, ZONA_BALAS.alto, COLOR.principal, 3);
       dibujarMicroambiente();
       dibujarTexto("CLIC: DESTINO · ARRASTRA: CORREGIR", ZONA_BALAS.x + ZONA_BALAS.ancho - 12, ZONA_BALAS.y + 8, 10, COLOR.medio, "right");
+
+      // "Juice" de impacto: temblor breve solo del contenido de la arena
+      // (nunca de la coordenada lógica usada para mover el corazón).
+      const enGolpe = performance.now() < estadoJuego.golpeHasta;
+      const jitter = enGolpe ? (2.5 * factorMovimiento()) : 0;
+      contexto.save();
+      if (jitter) contexto.translate((Math.random() - 0.5) * jitter * 2, (Math.random() - 0.5) * jitter * 2);
+
       estadoJuego.balas.forEach(function (bala) {
         dibujarAmenazaMicrobiologica(bala);
       });
@@ -3570,6 +3789,13 @@
       if (estadoJuego.corazon.invulnerable <= 0 || Math.floor(estadoJuego.corazon.invulnerable / 80) % 2 === 0) {
         dibujarCorazon(estadoJuego.corazon.x, estadoJuego.corazon.y);
       }
+      contexto.restore();
+
+      if (enGolpe) {
+        contexto.fillStyle = "rgba(255, 122, 114, 0.16)";
+        contexto.fillRect(ZONA_BALAS.x, ZONA_BALAS.y, ZONA_BALAS.ancho, ZONA_BALAS.alto);
+      }
+
       dibujarTexto(obtenerLeyendaAtaque(), 480, 492, 10, COLOR.medio, "center");
       dibujarTexto(
         "AMENAZA " + calcularAmenazaPorcentual() + "% · NIVEL " + calcularNivelAmenaza() + "/6 · " +
