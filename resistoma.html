@@ -1598,6 +1598,8 @@
         corazon: { x: ANCHO / 2, y: 390, ancho: 18, alto: 16, invulnerable: 0 },
         resumen: null,
         modoPractica: false,
+        pantallaPrevia: null,
+        seleccionPrevia: 0,
         reaccionBurlaHasta: 0,
         golpeHasta: 0,
         mecanismosDescartados: [],
@@ -2188,6 +2190,24 @@
 
     function cancelarReinicio() {
       mostrarCampania();
+    }
+
+    // Disponible a mitad de cualquier encuentro (diálogo, laboratorio,
+    // pre-ataque, la propia fase de balas, etc.): pausa la pantalla actual
+    // detrás de una confirmación para reiniciar el caso o volver al mapa,
+    // sin perder el progreso de campaña ya guardado.
+    function abrirConfirmacionAbandonar() {
+      if (estadoJuego.pantalla === "confirmar_abandonar") return;
+      estadoJuego.pantallaPrevia = estadoJuego.pantalla;
+      estadoJuego.seleccionPrevia = estadoJuego.seleccion;
+      estadoJuego.pantalla = "confirmar_abandonar";
+      estadoJuego.seleccion = 2;
+      Accesibilidad.anunciar("Menú de pausa: reiniciar este encuentro, volver al mapa de campaña, o seguir jugando.");
+    }
+
+    function seguirJugando() {
+      estadoJuego.pantalla = estadoJuego.pantallaPrevia || "turno";
+      estadoJuego.seleccion = estadoJuego.seleccionPrevia || 0;
     }
 
     function reiniciarProgresoCampania() {
@@ -3378,6 +3398,7 @@
     }
 
     function dibujarCabecera() {
+      registrarBoton(400, 6, 160, 24, "⟲ MENÚ / REINICIO", abrirConfirmacionAbandonar, false);
       dibujarTexto("RESISTOMA", 28, 18, 23, COLOR.fuerte);
       dibujarTexto(
         estadoJuego.modoPractica ? "PRÁCTICA RÁPIDA · MICROLEARNING" : "FENOTIPO ANTES QUE FÁRMACO",
@@ -3639,6 +3660,19 @@
         dibujarMarco(44, 543, 872, 26, COLOR.tenue, 1);
         dibujarTexto("ⓘ " + opcionActiva.descripcion, 54, 550, 10, COLOR.medio);
       }
+    }
+
+    function dibujarConfirmacionAbandonar() {
+      dibujarMarco(22, 22, 916, 556, COLOR.medio, 3);
+      dibujarTexto("PAUSA", 48, 46, 22, COLOR.fuerte);
+      dibujarTextoEnvuelto(
+        CONTENIDO_CLINICO.encuentro.microorganismo + " · " + CONTENIDO_CLINICO.encuentro.nivelResistencia +
+        ". Tu progreso de campaña ya guardado no se pierde; lo que se reinicia es solo este encuentro en curso.",
+        48, 92, 860, 13, COLOR.medio, 19, 2
+      );
+      registrarBoton(340, 190, 280, 54, "REINICIAR ESTE\nENCUENTRO DESDE CERO", reiniciarEncuentroActual, estadoJuego.seleccion === 0);
+      registrarBoton(340, 258, 280, 54, "VOLVER AL MAPA\nDE CAMPAÑA", mostrarCampania, estadoJuego.seleccion === 1);
+      registrarBoton(340, 326, 280, 54, "SEGUIR JUGANDO\nCANCELAR", seguirJugando, estadoJuego.seleccion === 2);
     }
 
     function dibujarConfirmacionReinicio() {
@@ -4090,6 +4124,10 @@
         dibujarConfirmacionReinicio();
         return;
       }
+      if (estadoJuego.pantalla === "confirmar_abandonar") {
+        dibujarConfirmacionAbandonar();
+        return;
+      }
       dibujarCabecera();
       dibujarPanelesEstado();
 
@@ -4123,6 +4161,12 @@
       if (estadoJuego.pantalla === "confirmar_reinicio") {
         if (estadoJuego.seleccion === 0) reiniciarProgresoCampania();
         else cancelarReinicio();
+        return;
+      }
+      if (estadoJuego.pantalla === "confirmar_abandonar") {
+        if (estadoJuego.seleccion === 0) reiniciarEncuentroActual();
+        else if (estadoJuego.seleccion === 1) mostrarCampania();
+        else seguirJugando();
         return;
       }
       if (estadoJuego.pantalla === "turno") {
@@ -4161,6 +4205,10 @@
         estadoJuego.seleccion = (estadoJuego.seleccion + direccion + 2) % 2;
         return;
       }
+      if (estadoJuego.pantalla === "confirmar_abandonar") {
+        estadoJuego.seleccion = (estadoJuego.seleccion + direccion + 3) % 3;
+        return;
+      }
       if (estadoJuego.pantalla !== "menu") return;
       const opciones = obtenerOpcionesMenu();
       if (opciones.length === 0) return;
@@ -4175,6 +4223,14 @@
         estadoJuego.punteroPresionado = false;
       }
 
+      // Atajo global: "R" abre pausa/reinicio a mitad de cualquier encuentro,
+      // sin importar en qué submenú o pantalla esté (excepto donde ya no
+      // aplica: mapa de campaña, resumen final, u otra confirmación).
+      if ((evento.key === "r" || evento.key === "R") &&
+        !["campania", "resumen", "confirmar_reinicio", "confirmar_abandonar"].includes(estadoJuego.pantalla)) {
+        abrirConfirmacionAbandonar();
+        return;
+      }
       if (estadoJuego.pantalla === "dialogo" && (evento.key === "Enter" || evento.key === "z" || evento.key === "Z" || evento.key === " ")) {
         avanzarDialogo();
         return;
@@ -4195,13 +4251,14 @@
         else iniciarJuego();
         return;
       }
-      if (estadoJuego.pantalla === "campania" || estadoJuego.pantalla === "turno" || estadoJuego.pantalla === "menu" || estadoJuego.pantalla === "confirmar_tratamiento" || estadoJuego.pantalla === "confirmar_reinicio") {
+      if (estadoJuego.pantalla === "campania" || estadoJuego.pantalla === "turno" || estadoJuego.pantalla === "menu" || estadoJuego.pantalla === "confirmar_tratamiento" || estadoJuego.pantalla === "confirmar_reinicio" || estadoJuego.pantalla === "confirmar_abandonar") {
         if (evento.key === "ArrowRight" || evento.key === "ArrowDown") moverSeleccion(1);
         if (evento.key === "ArrowLeft" || evento.key === "ArrowUp") moverSeleccion(-1);
         if (evento.key === "Enter" || evento.key === "z" || evento.key === "Z" || evento.key === " ") activarSeleccionActual();
         if ((evento.key === "Escape" || evento.key === "x" || evento.key === "X") && estadoJuego.pantalla === "menu") volverMenuPrincipal();
         if ((evento.key === "Escape" || evento.key === "x" || evento.key === "X") && estadoJuego.pantalla === "confirmar_tratamiento") volverMenuTratamiento();
         if ((evento.key === "Escape" || evento.key === "x" || evento.key === "X") && estadoJuego.pantalla === "confirmar_reinicio") cancelarReinicio();
+        if ((evento.key === "Escape" || evento.key === "x" || evento.key === "X") && estadoJuego.pantalla === "confirmar_abandonar") seguirJugando();
       }
     });
 
@@ -4257,7 +4314,7 @@
         return punto.x >= elemento.x && punto.x <= elemento.x + elemento.ancho &&
                punto.y >= elemento.y && punto.y <= elemento.y + elemento.alto;
       });
-      if (indiceBoton >= 0 && ["campania", "turno", "menu", "confirmar_tratamiento", "confirmar_reinicio", "preataque"].includes(estadoJuego.pantalla)) {
+      if (indiceBoton >= 0 && ["campania", "turno", "menu", "confirmar_tratamiento", "confirmar_reinicio", "confirmar_abandonar", "preataque"].includes(estadoJuego.pantalla)) {
         estadoJuego.seleccion = indiceBoton;
       }
     }
