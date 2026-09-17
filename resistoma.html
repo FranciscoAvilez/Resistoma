@@ -1590,6 +1590,7 @@
         tiempoBalas: 0,
         duracionBalas: 5600,
         tiempoGeneracionBalas: 0,
+        tiempoGeneracionFirma: 0,
         oleadaMicrobiologica: 0,
         punteroActivo: false,
         punteroPresionado: false,
@@ -2175,6 +2176,27 @@
       estadoJuego.seleccion = indiceEncuentroActual;
     }
 
+    // El reinicio borra solo el avance de campaña (casos desbloqueados y
+    // mejores puntajes) guardado en este navegador. No toca las analíticas
+    // de aprendizaje (ResistomaAnalytics): son un registro histórico aparte
+    // que un instructor podría querer conservar aunque el alumno reinicie.
+    function pedirConfirmacionReinicio() {
+      estadoJuego.pantalla = "confirmar_reinicio";
+      estadoJuego.seleccion = 1;
+      Accesibilidad.anunciar("¿Reiniciar todo el progreso de la campaña? Esta acción no se puede deshacer.");
+    }
+
+    function cancelarReinicio() {
+      mostrarCampania();
+    }
+
+    function reiniciarProgresoCampania() {
+      progresoCampania = { maximoDesbloqueado: 0, mejoresPuntajes: {}, versionCalificacion: VERSION_CALIFICACION };
+      guardarProgresoCampania();
+      mostrarCampania();
+      Accesibilidad.anunciar("Progreso reiniciado. Empiezas de nuevo desde el primer encuentro.");
+    }
+
     function seleccionarEncuentroCampania(indice) {
       if (indice > progresoCampania.maximoDesbloqueado) return;
       iniciarEncuentro(indice);
@@ -2603,6 +2625,7 @@
       estadoJuego.balas = [];
       estadoJuego.tiempoBalas = 0;
       estadoJuego.tiempoGeneracionBalas = 0;
+      estadoJuego.tiempoGeneracionFirma = 480;
       estadoJuego.oleadaMicrobiologica = 0;
       estadoJuego.duracionBalas = 5000 + calcularAmenazaPorcentual() * 18;
       estadoJuego.corazon.x = ANCHO / 2;
@@ -2632,8 +2655,136 @@
         giro: (detalles.giro || 0) * factor,
         fase: detalles.fase || 0,
         amplitud: detalles.amplitud || 0,
-        homing: detalles.homing || false
+        homing: detalles.homing || false,
+        // Firma de Citrobacter ("viraje fenotípico"): un proyectil puede nacer
+        // recto y solo activar el homing tras este retardo, en ms.
+        retardoHoming: detalles.retardoHoming || 0,
+        edadMs: 0
       });
+    }
+
+    /* ----------------------------------------------------------------
+       FIRMAS DE ATAQUE POR ESPECIE
+       ------------------------------------------------------------------
+       El patrón "clínico" (anillos, plásmidos, cromosomas, iones de zinc...)
+       sigue dependiendo del mecanismo: esa es la pista que enseña BLEE vs
+       KPC vs MBL y no se toca. Encima de eso, cada especie añade su propio
+       gesto de ataque reconocible, para que Klebsiella nunca se sienta
+       igual que Proteus aunque ambas tengan, por ejemplo, AmpC plasmídica.
+       Se disparan con menor frecuencia que el patrón principal (ver
+       actualizarFaseBalas) para no saturar la pantalla.
+       ---------------------------------------------------------------- */
+
+    // E. coli: directa y veloz. Tres proyectiles en línea recta y apretada.
+    function generarFirmaEcoli(nivel) {
+        const velocidad = (230 + nivel * 12) * factorMovimiento();
+        const desdeIzquierda = Math.random() < 0.5;
+        const yBase = ZONA_BALAS.y + 36 + Math.random() * (ZONA_BALAS.alto - 100);
+        for (let i = 0; i < 3; i += 1) {
+          crearBala(
+            desdeIzquierda ? ZONA_BALAS.x + 4 : ZONA_BALAS.x + ZONA_BALAS.ancho - 4,
+            yBase + i * 15,
+            desdeIzquierda ? velocidad : -velocidad,
+            0, 6, "bacteria", 3 + Math.floor(nivel / 3),
+            { giro: (desdeIzquierda ? 1 : -1) * 2 }
+          );
+        }
+    }
+
+    // Klebsiella: lenta, grande y persigue. Su cápsula la vuelve un "tanque".
+    function generarFirmaKlebsiella(nivel) {
+        const desdeIzquierda = Math.random() < 0.5;
+        crearBala(
+          desdeIzquierda ? ZONA_BALAS.x + 12 : ZONA_BALAS.x + ZONA_BALAS.ancho - 12,
+          ZONA_BALAS.y + ZONA_BALAS.alto / 2,
+          (desdeIzquierda ? 1 : -1) * (42 + nivel * 2) * factorMovimiento(),
+          0, 16, "capsula", 6 + Math.floor(nivel / 2),
+          { homing: true }
+        );
+    }
+
+    // Proteus: enjambre giratorio que nace del centro de la arena, fiel a su
+    // motilidad hiperflagelada ("swarming").
+    function generarFirmaProteus(nivel) {
+        const centroX = ZONA_BALAS.x + ZONA_BALAS.ancho / 2;
+        const centroY = ZONA_BALAS.y + ZONA_BALAS.alto / 2;
+        const cantidad = 6 + Math.floor(nivel / 2);
+        const velocidad = (95 + nivel * 10) * factorMovimiento();
+        const faseInicial = Math.random() * Math.PI * 2;
+        for (let i = 0; i < cantidad; i += 1) {
+          const angulo = faseInicial + (i / cantidad) * Math.PI * 2;
+          crearBala(
+            centroX, centroY,
+            Math.cos(angulo) * velocidad, Math.sin(angulo) * velocidad,
+            5, "flagelo", 3 + Math.floor(nivel / 3),
+            { giro: 2.6 }
+          );
+        }
+    }
+
+    // Citrobacter: "viraje fenotípico". Nace recta y solo persigue tras un
+    // retardo, como una AmpC que se desreprime a mitad de vuelo.
+    function generarFirmaCitrobacter(nivel) {
+        const cantidad = 2 + Math.floor(nivel / 3);
+        const velocidad = (120 + nivel * 8) * factorMovimiento();
+        for (let i = 0; i < cantidad; i += 1) {
+          const desdeIzquierda = Math.random() < 0.5;
+          const y = ZONA_BALAS.y + 40 + Math.random() * (ZONA_BALAS.alto - 80);
+          crearBala(
+            desdeIzquierda ? ZONA_BALAS.x + 4 : ZONA_BALAS.x + ZONA_BALAS.ancho - 4,
+            y,
+            desdeIzquierda ? velocidad : -velocidad, 0,
+            7, "viraje", 5 + Math.floor(nivel / 3),
+            { homing: true, retardoHoming: 650 }
+          );
+        }
+    }
+
+    // Serratia: elegante y ondulante, arcos que caen desde arriba en una
+    // curva senoidal (referencia a su pigmento rojo y su fama de "letal
+    // pero elegante").
+    function generarFirmaSerratia(nivel) {
+        const cantidad = 2 + Math.floor(nivel / 3);
+        const velocidad = (85 + nivel * 6) * factorMovimiento();
+        for (let i = 0; i < cantidad; i += 1) {
+          const x = ZONA_BALAS.x + 40 + Math.random() * (ZONA_BALAS.ancho - 80);
+          crearBala(
+            x, ZONA_BALAS.y + 4,
+            0, velocidad,
+            7, "arco", 5 + Math.floor(nivel / 3),
+            { fase: Math.random() * Math.PI * 2, amplitud: 46 + nivel * 3, giro: 1.2 }
+          );
+        }
+    }
+
+    // Enterobacter: "patrón adaptativo". Alterna muro horizontal/vertical de
+    // forma impredecible, reflejando su versatilidad clínica.
+    function generarFirmaEnterobacter(nivel) {
+        const horizontal = Math.random() < 0.5;
+        const cantidad = 7 + Math.floor(nivel / 2);
+        const hueco = Math.floor(Math.random() * cantidad);
+        const velocidad = (110 + nivel * 9) * factorMovimiento();
+        for (let i = 0; i < cantidad; i += 1) {
+          if (i === hueco) continue;
+          if (horizontal) {
+            const y = ZONA_BALAS.y + 20 + i * (ZONA_BALAS.alto - 40) / Math.max(1, cantidad - 1);
+            crearBala(ZONA_BALAS.x + ZONA_BALAS.ancho - 4, y, -(110 + nivel * 9) * factorMovimiento(), 0, 6, "capsula", 4 + Math.floor(nivel / 3), { giro: 1.4 });
+          } else {
+            const x = ZONA_BALAS.x + 20 + i * (ZONA_BALAS.ancho - 40) / Math.max(1, cantidad - 1);
+            crearBala(x, ZONA_BALAS.y + 4, 0, velocidad, 6, "capsula", 4 + Math.floor(nivel / 3), { giro: 1.4 });
+          }
+        }
+    }
+
+    function generarFirmaEspecie() {
+      const nivel = calcularNivelAmenaza();
+      const spriteId = CONTENIDO_CLINICO.encuentro.spriteId;
+      if (spriteId === "ecoli") generarFirmaEcoli(nivel);
+      else if (spriteId === "klebsiella") generarFirmaKlebsiella(nivel);
+      else if (spriteId === "proteus") generarFirmaProteus(nivel);
+      else if (spriteId === "citrobacter") generarFirmaCitrobacter(nivel);
+      else if (spriteId === "serratia") generarFirmaSerratia(nivel);
+      else if (spriteId === "enterobacter") generarFirmaEnterobacter(nivel);
     }
 
     // El tutorial usa amenazas microbiológicas simples. La especie cambia la
@@ -2982,6 +3133,7 @@
       const segundos = delta / 1000;
       estadoJuego.tiempoBalas += delta;
       estadoJuego.tiempoGeneracionBalas += delta;
+      estadoJuego.tiempoGeneracionFirma += delta;
       estadoJuego.corazon.invulnerable = Math.max(0, estadoJuego.corazon.invulnerable - delta);
 
       const distanciaMaxima = 210 * segundos;
@@ -3017,9 +3169,18 @@
         else generarPatronSegunTipo(estadoJuego.patronBalas);
       }
 
+      // Firma de especie: cadencia propia, más lenta que el patrón clínico,
+      // para que se lea como un "gesto" superpuesto y no como ruido.
+      const intervaloFirma = Math.max(950, 1750 - amenaza * 3.2);
+      if (estadoJuego.tiempoGeneracionFirma >= intervaloFirma) {
+        estadoJuego.tiempoGeneracionFirma = 0;
+        generarFirmaEspecie();
+      }
+
       estadoJuego.balas.forEach(function (bala) {
+        bala.edadMs += delta;
         bala.angulo += bala.giro * segundos;
-        if (bala.homing) {
+        if (bala.homing && bala.edadMs >= bala.retardoHoming) {
           const dx = estadoJuego.corazon.x - bala.x;
           const dy = estadoJuego.corazon.y - bala.y;
           const distancia = Math.max(1, Math.sqrt(dx * dx + dy * dy));
@@ -3029,7 +3190,7 @@
         }
         bala.x += bala.velocidadX * segundos;
         bala.y += bala.velocidadY * segundos;
-        if (["enzima_blee", "enzima_ampc", "flagelo", "serina", "oxacilinasa"].includes(bala.tipo)) {
+        if (["enzima_blee", "enzima_ampc", "flagelo", "serina", "oxacilinasa", "arco"].includes(bala.tipo)) {
           bala.y += Math.sin(estadoJuego.tiempoBalas / 150 + bala.fase) * bala.amplitud * segundos;
         }
         comprobarColision(bala);
@@ -3189,11 +3350,18 @@
       });
 
       const indiceBotonPractica = progresoCampania.maximoDesbloqueado + 1;
+      const indiceBotonReinicio = progresoCampania.maximoDesbloqueado + 2;
       registrarBoton(
-        42, 502, 872, 34,
+        42, 502, 636, 34,
         "MICROLEARNING · PRÁCTICA RÁPIDA (3-5 MIN) · CASO ALEATORIO YA DESBLOQUEADO",
         iniciarPracticaRapida,
         estadoJuego.seleccion === indiceBotonPractica
+      );
+      registrarBoton(
+        690, 502, 224, 34,
+        "⟲ REINICIAR PROGRESO",
+        pedirConfirmacionReinicio,
+        estadoJuego.seleccion === indiceBotonReinicio
       );
 
       dibujarTexto("9 encuentros · susceptible → MDR → CRE/XDR · el jefe cambia de forma al reintentar", 42, 548, 10, COLOR.principal);
@@ -3473,6 +3641,27 @@
       }
     }
 
+    function dibujarConfirmacionReinicio() {
+      dibujarMarco(22, 22, 916, 556, COLOR.alerta, 3);
+      dibujarTexto("REINICIAR PROGRESO", 48, 46, 22, COLOR.alerta);
+      dibujarTextoEnvuelto(
+        "Esto borra, solo en este navegador, los encuentros desbloqueados y las mejores calificaciones. No se puede deshacer.",
+        48, 92, 860, 14, COLOR.medio, 20, 2
+      );
+      dibujarTexto(
+        "Progreso actual: " + (progresoCampania.maximoDesbloqueado + 1) + "/" + CONTENIDO_CLINICO.encuentros.length + " encuentros desbloqueados.",
+        48, 152, 13, COLOR.principal
+      );
+      dibujarTextoEnvuelto(
+        "Las analíticas de aprendizaje exportables (ResistomaAnalytics) no se borran con esto.",
+        48, 180, 860, 11, COLOR.tenue, 16, 2
+      );
+
+      dibujarTexto("¿CONFIRMAS EL REINICIO?", 480, 380, 14, COLOR.fuerte, "center");
+      registrarBoton(210, 430, 250, 54, "SÍ, REINICIAR\nBORRAR PROGRESO", reiniciarProgresoCampania, estadoJuego.seleccion === 0);
+      registrarBoton(500, 430, 250, 54, "NO, CONSERVAR\nVOLVER AL MAPA", cancelarReinicio, estadoJuego.seleccion === 1);
+    }
+
     function dibujarConfirmacionTratamiento() {
       const antibiotico = CONTENIDO_CLINICO.encuentro.terapias.find(function (elemento) {
         return elemento.id === estadoJuego.antibioticoEnRevision;
@@ -3716,6 +3905,27 @@
         contexto.moveTo(0, -r);
         contexto.lineTo(0, r);
         contexto.stroke();
+      } else if (bala.tipo === "viraje") {
+        // Firma de Citrobacter: doble cheurón que anticipa el viraje hacia
+        // el corazón una vez vencido el retardo de homing.
+        contexto.strokeStyle = COLOR.medio;
+        contexto.beginPath();
+        contexto.moveTo(-r, -r);
+        contexto.lineTo(0, 0);
+        contexto.lineTo(-r, r);
+        contexto.moveTo(0, -r);
+        contexto.lineTo(r, 0);
+        contexto.lineTo(0, r);
+        contexto.stroke();
+      } else if (bala.tipo === "arco") {
+        // Firma de Serratia: lente alargada con una breve estela, para el
+        // gesto ondulante y elegante de su ataque.
+        contexto.strokeStyle = COLOR.alerta;
+        contexto.beginPath();
+        contexto.ellipse(0, 0, r, r / 2.2, Math.PI / 4, 0, Math.PI * 2);
+        contexto.moveTo(-r * 0.5, -r * 0.5);
+        contexto.lineTo(-r * 1.5, -r * 1.3);
+        contexto.stroke();
       } else {
         contexto.beginPath();
         contexto.arc(0, 0, r, 0, Math.PI * 2);
@@ -3876,6 +4086,10 @@
         dibujarResumen();
         return;
       }
+      if (estadoJuego.pantalla === "confirmar_reinicio") {
+        dibujarConfirmacionReinicio();
+        return;
+      }
       dibujarCabecera();
       dibujarPanelesEstado();
 
@@ -3901,8 +4115,14 @@
 
     function activarSeleccionActual() {
       if (estadoJuego.pantalla === "campania") {
-        if (estadoJuego.seleccion === progresoCampania.maximoDesbloqueado + 1) iniciarPracticaRapida();
+        if (estadoJuego.seleccion === progresoCampania.maximoDesbloqueado + 2) pedirConfirmacionReinicio();
+        else if (estadoJuego.seleccion === progresoCampania.maximoDesbloqueado + 1) iniciarPracticaRapida();
         else seleccionarEncuentroCampania(estadoJuego.seleccion);
+        return;
+      }
+      if (estadoJuego.pantalla === "confirmar_reinicio") {
+        if (estadoJuego.seleccion === 0) reiniciarProgresoCampania();
+        else cancelarReinicio();
         return;
       }
       if (estadoJuego.pantalla === "turno") {
@@ -3928,8 +4148,8 @@
 
     function moverSeleccion(direccion) {
       if (estadoJuego.pantalla === "campania") {
-        // +1: incluye el botón de práctica rápida al final de la cuadrícula.
-        const totalDisponibles = progresoCampania.maximoDesbloqueado + 2;
+        // +2: incluye práctica rápida y reiniciar progreso al final de la cuadrícula.
+        const totalDisponibles = progresoCampania.maximoDesbloqueado + 3;
         estadoJuego.seleccion = (estadoJuego.seleccion + direccion + totalDisponibles) % totalDisponibles;
         return;
       }
@@ -3937,7 +4157,7 @@
         estadoJuego.seleccion = (estadoJuego.seleccion + direccion + 4) % 4;
         return;
       }
-      if (estadoJuego.pantalla === "confirmar_tratamiento") {
+      if (estadoJuego.pantalla === "confirmar_tratamiento" || estadoJuego.pantalla === "confirmar_reinicio") {
         estadoJuego.seleccion = (estadoJuego.seleccion + direccion + 2) % 2;
         return;
       }
@@ -3975,12 +4195,13 @@
         else iniciarJuego();
         return;
       }
-      if (estadoJuego.pantalla === "campania" || estadoJuego.pantalla === "turno" || estadoJuego.pantalla === "menu" || estadoJuego.pantalla === "confirmar_tratamiento") {
+      if (estadoJuego.pantalla === "campania" || estadoJuego.pantalla === "turno" || estadoJuego.pantalla === "menu" || estadoJuego.pantalla === "confirmar_tratamiento" || estadoJuego.pantalla === "confirmar_reinicio") {
         if (evento.key === "ArrowRight" || evento.key === "ArrowDown") moverSeleccion(1);
         if (evento.key === "ArrowLeft" || evento.key === "ArrowUp") moverSeleccion(-1);
         if (evento.key === "Enter" || evento.key === "z" || evento.key === "Z" || evento.key === " ") activarSeleccionActual();
         if ((evento.key === "Escape" || evento.key === "x" || evento.key === "X") && estadoJuego.pantalla === "menu") volverMenuPrincipal();
         if ((evento.key === "Escape" || evento.key === "x" || evento.key === "X") && estadoJuego.pantalla === "confirmar_tratamiento") volverMenuTratamiento();
+        if ((evento.key === "Escape" || evento.key === "x" || evento.key === "X") && estadoJuego.pantalla === "confirmar_reinicio") cancelarReinicio();
       }
     });
 
@@ -4036,7 +4257,7 @@
         return punto.x >= elemento.x && punto.x <= elemento.x + elemento.ancho &&
                punto.y >= elemento.y && punto.y <= elemento.y + elemento.alto;
       });
-      if (indiceBoton >= 0 && ["campania", "turno", "menu", "confirmar_tratamiento", "preataque"].includes(estadoJuego.pantalla)) {
+      if (indiceBoton >= 0 && ["campania", "turno", "menu", "confirmar_tratamiento", "confirmar_reinicio", "preataque"].includes(estadoJuego.pantalla)) {
         estadoJuego.seleccion = indiceBoton;
       }
     }
