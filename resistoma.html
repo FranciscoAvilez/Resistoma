@@ -46,17 +46,31 @@
       border: 2px solid var(--tinta-media);
       box-shadow: 0 0 28px rgba(118, 220, 232, .18), inset 0 0 30px rgba(7, 16, 29, .42);
       background: var(--panel);
+      /* En pantallas muy angostas el lienzo no se encoge por debajo de un
+         tamaño táctil usable (WCAG 2.5.8, objetivo mínimo ~24-44px CSS):
+         preferimos scroll horizontal a botones minúsculos e ilegibles. */
+      overflow-x: auto;
     }
 
     canvas {
       display: block;
       width: 100%;
+      min-width: 620px;
       height: auto;
       aspect-ratio: 16 / 10;
       /* Los sprites ya se dibujan con rectángulos enteros. Evitar "pixelated"
          impide que el navegador pixele también las letras del Canvas. */
       image-rendering: auto;
       touch-action: none;
+    }
+
+    canvas:focus-visible {
+      outline: 3px solid var(--tinta-fuerte);
+      outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; }
     }
 
     .pie {
@@ -93,16 +107,29 @@
 <body>
   <main class="contenedor">
     <h1 class="solo-lector-pantalla">Resistoma: fenotipo antes que fármaco</h1>
+    <p id="descripcionLienzo" class="solo-lector-pantalla">
+      Juego educativo de inferencia clínica renderizado en un lienzo gráfico. El texto de cada
+      escena se anuncia en la región de abajo. Flechas o WASD mueven la selección o el corazón;
+      Enter/Espacio confirma; Escape/X regresa.
+    </p>
     <div class="marco">
-      <canvas id="lienzoJuego" width="960" height="600" aria-label="Juego educativo Resistoma"></canvas>
+      <canvas id="lienzoJuego" width="960" height="600" tabindex="0"
+        role="application" aria-label="Juego Resistoma" aria-describedby="descripcionLienzo anunciosJuego"></canvas>
     </div>
     <div class="pie" aria-hidden="true">
       <span>CLIC/TOQUE: elegir · ARRASTRAR: mover corazón · teclado disponible</span>
       <span>CLSI M100 Ed. 36 · EUCAST 16.1 comparativo · IDSA 2026</span>
     </div>
+    <div id="anunciosJuego" class="solo-lector-pantalla" aria-live="polite" role="status"></div>
+    <div id="anunciosUrgentes" class="solo-lector-pantalla" aria-live="assertive" role="alert"></div>
   </main>
 
   <script>
+    // Todo el motor vive dentro de este IIFE: ninguna de las ~150 funciones
+    // ni constantes internas se filtra a `window`. Solo se exponen
+    // explícitamente ResistomaAnalytics (exportación/telemetría) y Resistoma
+    // (asa de depuración de solo lectura) al final del archivo.
+    (function () {
     "use strict";
 
     /* ================================================================
@@ -1264,6 +1291,203 @@
     let ultimoTiempo = performance.now();
     let varianteGenetica = "";
 
+    /* ================================================================
+       2.1 ACCESIBILIDAD: NARRACIÓN PARA LECTOR DE PANTALLA Y MOVIMIENTO
+       ----------------------------------------------------------------
+       El lienzo no expone su contenido a tecnología de asistencia, así que
+       espejamos cada cambio de pantalla relevante como texto en una región
+       "aria-live". El efecto de máquina de escribir es solo visual: el
+       lector de pantalla recibe el mensaje completo de inmediato.
+       ================================================================ */
+    const Accesibilidad = (function () {
+      const anuncioPolite = document.getElementById("anunciosJuego");
+      const anuncioAsertivo = document.getElementById("anunciosUrgentes");
+      const consultaMovimiento = window.matchMedia
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : { matches: false, addEventListener: function () {} };
+      const estadoInterno = { movimientoReducido: consultaMovimiento.matches };
+      if (consultaMovimiento.addEventListener) {
+        consultaMovimiento.addEventListener("change", function (evento) {
+          estadoInterno.movimientoReducido = evento.matches;
+        });
+      }
+      let ultimoTexto = "";
+      function anunciar(texto, urgente) {
+        if (!texto) return;
+        const destino = urgente ? anuncioAsertivo : anuncioPolite;
+        if (!destino) return;
+        // Forzar re-anuncio aunque el texto se repita literalmente.
+        destino.textContent = "";
+        window.setTimeout(function () {
+          destino.textContent = texto;
+          ultimoTexto = texto;
+        }, 30);
+      }
+      return {
+        anunciar: anunciar,
+        get movimientoReducido() { return estadoInterno.movimientoReducido; },
+        get ultimoTexto() { return ultimoTexto; }
+      };
+    })();
+
+    // Factor global aplicado a la velocidad de proyectiles y a la aceleración
+    // homing cuando el sistema operativo pide "reducir movimiento". No cambia
+    // la dificultad clínica (daño, presión, puntuación), solo la exigencia
+    // motora de la fase bullet-hell.
+    function factorMovimiento() {
+      return Accesibilidad.movimientoReducido ? 0.55 : 1;
+    }
+
+    /* ================================================================
+       2.2 ANALÍTICAS DE APRENDIZAJE
+       ----------------------------------------------------------------
+       Registra un resumen estructurado por encuentro (aciertos, fallos,
+       tiempo, puntuación) en este navegador y permite exportarlo a JSON/CSV
+       o reenviarlo a un endpoint propio (p. ej. un Web App de Google Apps
+       Script que escriba en una hoja de Google Sheets/Forms). No se envía
+       nada por red salvo que el usuario configure explícitamente una URL.
+       ================================================================ */
+    const ResistomaAnalytics = (function () {
+      const CLAVE = "resistoma_analitica_v1";
+      const CLAVE_WEBHOOK = "resistoma_analitica_webhook";
+      const MAX_REGISTROS = 300;
+      const idSesion = "sesion_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+
+      function leerTodos() {
+        try {
+          return JSON.parse(localStorage.getItem(CLAVE)) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function guardarTodos(registros) {
+        try {
+          localStorage.setItem(CLAVE, JSON.stringify(registros.slice(-MAX_REGISTROS)));
+        } catch (error) {
+          // Sin almacenamiento disponible: la sesión sigue, pero no persiste.
+        }
+      }
+
+      function registrarEncuentro(resumen, contexto) {
+        const registro = Object.assign({
+          idSesion: idSesion,
+          marcaDeTiempo: new Date().toISOString(),
+          practica: !!(contexto && contexto.modoPractica),
+          duracionMs: contexto && contexto.duracionMs
+        }, resumen);
+        const registros = leerTodos();
+        registros.push(registro);
+        guardarTodos(registros);
+        enviarWebhookSiConfigurado(registro);
+        return registro;
+      }
+
+      function configurarWebhook(url) {
+        try {
+          if (url) localStorage.setItem(CLAVE_WEBHOOK, url);
+          else localStorage.removeItem(CLAVE_WEBHOOK);
+        } catch (error) { /* almacenamiento no disponible */ }
+      }
+
+      function enviarWebhookSiConfigurado(registro) {
+        let url = null;
+        try {
+          url = localStorage.getItem(CLAVE_WEBHOOK);
+        } catch (error) { /* sin acceso a almacenamiento */ }
+        if (!url || !window.fetch) return;
+        // text/plain evita el preflight CORS que un Web App de Apps Script
+        // no siempre resuelve; el propio script del lado servidor puede
+        // parsear el body como JSON (e.utf8 o e.postData.contents).
+        fetch(url, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(registro)
+        }).catch(function () {
+          // Fallo de red silencioso: la analítica local ya quedó guardada.
+        });
+      }
+
+      function aPlano(registro) {
+        return {
+          marcaDeTiempo: registro.marcaDeTiempo,
+          idSesion: registro.idSesion,
+          practica: registro.practica,
+          encuentroId: registro.encuentroId,
+          formaId: registro.formaId || "",
+          microorganismo: registro.microorganismo,
+          nombreMecanismo: registro.nombreMecanismo,
+          hipotesis: registro.hipotesis,
+          mecanismoCorrecto: registro.mecanismoCorrecto,
+          tratamiento: registro.tratamiento,
+          victoria: registro.victoria,
+          porMercy: registro.porMercy,
+          rango: registro.rango,
+          total: registro.total,
+          puntosInferencia: registro.puntosInferencia,
+          puntosTratamiento: registro.puntosTratamiento,
+          items: registro.items,
+          diagnosticoResponsable: registro.diagnosticoResponsable,
+          seguridad: registro.seguridad,
+          erroresClinicos: registro.erroresClinicos,
+          danoAlPaciente: registro.danoAlPaciente,
+          duracionMs: registro.duracionMs || ""
+        };
+      }
+
+      function descargarArchivo(nombre, contenido, tipoMime) {
+        const blob = new Blob([contenido], { type: tipoMime });
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement("a");
+        enlace.href = url;
+        enlace.download = nombre;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        URL.revokeObjectURL(url);
+      }
+
+      function exportarJSON() {
+        const registros = leerTodos();
+        descargarArchivo("resistoma_analitica.json", JSON.stringify(registros, null, 2), "application/json");
+        return registros;
+      }
+
+      function exportarCSV() {
+        const registros = leerTodos().map(aPlano);
+        if (registros.length === 0) {
+          descargarArchivo("resistoma_analitica.csv", "sin_datos\n", "text/csv");
+          return [];
+        }
+        const columnas = Object.keys(registros[0]);
+        const escapar = function (valor) {
+          const texto = String(valor === undefined || valor === null ? "" : valor);
+          return /[",\n]/.test(texto) ? '"' + texto.replace(/"/g, '""') + '"' : texto;
+        };
+        const filas = [columnas.join(",")].concat(
+          registros.map(function (registro) { return columnas.map(function (columna) { return escapar(registro[columna]); }).join(","); })
+        );
+        descargarArchivo("resistoma_analitica.csv", filas.join("\n"), "text/csv;charset=utf-8");
+        return registros;
+      }
+
+      function limpiar() {
+        try { localStorage.removeItem(CLAVE); } catch (error) { /* sin acceso */ }
+      }
+
+      return {
+        idSesion: idSesion,
+        registrarEncuentro: registrarEncuentro,
+        configurarWebhook: configurarWebhook,
+        obtenerRegistros: leerTodos,
+        exportarJSON: exportarJSON,
+        exportarCSV: exportarCSV,
+        limpiar: limpiar
+      };
+    })();
+    window.ResistomaAnalytics = ResistomaAnalytics;
+
     function crearEstadoInicial() {
       const dificultad = CONTENIDO_CLINICO.encuentro.dificultad || {};
       const creditosLaboratorio = dificultad.creditosLaboratorio || 6;
@@ -1286,7 +1510,6 @@
         tratamientoElegido: null,
         antibioticoEnRevision: null,
         tratamientoOptimo: false,
-        tratamientoAntesDeInferir: false,
         ajustePkPd: false,
         focoEvaluado: false,
         aislamiento: false,
@@ -1325,7 +1548,9 @@
         punteroPresionado: false,
         objetivoPuntero: { x: ANCHO / 2, y: 390 },
         corazon: { x: ANCHO / 2, y: 390, ancho: 18, alto: 16, invulnerable: 0 },
-        resumen: null
+        resumen: null,
+        modoPractica: false,
+        inicioEncuentroMs: performance.now()
       };
     }
 
@@ -1709,6 +1934,9 @@
       estadoJuego.mensajeVisible = "";
       estadoJuego.indiceTexto = 0;
       estadoJuego.acumuladorTexto = 0;
+      // El lector de pantalla recibe el texto completo de inmediato; la
+      // máquina de escribir es un efecto visual, no una barrera de lectura.
+      Accesibilidad.anunciar(estadoJuego.mensajeCompleto);
     }
 
     function avanzarDialogo() {
@@ -1802,16 +2030,25 @@
       iniciarEncuentro(indice);
     }
 
-    function iniciarEncuentro(indice) {
+    function iniciarEncuentro(indice, opciones) {
       indiceEncuentroActual = limitar(indice, 0, CONTENIDO_CLINICO.encuentros.length - 1);
       encuentroActivo = materializarEncuentro(CONTENIDO_CLINICO.encuentros[indiceEncuentroActual]);
       estadoJuego = crearEstadoInicial();
+      estadoJuego.modoPractica = !!(opciones && opciones.practica);
       varianteGenetica = elegirAleatorio(CONTENIDO_CLINICO.encuentro.variantesGeneticas);
       mostrarMensajes(CONTENIDO_CLINICO.encuentro.introduccion, iniciarTurnoJugador);
     }
 
+    // Microlearning: sesión rápida y autocontenida de 3-5 minutos sobre un
+    // caso ya desbloqueado, elegido al azar. No exige seguir el orden de la
+    // campaña; sí registra el resultado igual que cualquier otro encuentro.
+    function iniciarPracticaRapida() {
+      const indice = Math.floor(Math.random() * (progresoCampania.maximoDesbloqueado + 1));
+      iniciarEncuentro(indice, { practica: true });
+    }
+
     function reiniciarEncuentroActual() {
-      iniciarEncuentro(indiceEncuentroActual);
+      iniciarEncuentro(indiceEncuentroActual, { practica: estadoJuego.modoPractica });
     }
 
     function iniciarSiguienteEncuentro() {
@@ -1841,10 +2078,19 @@
       estadoJuego.turno += 1;
     }
 
+    const TITULOS_MENU = {
+      act: "LABORATORIO · PRUEBAS DISPONIBLES [ACT]",
+      fight: "TRATAMIENTO · ELEGIR ESQUEMA [FIGHT]",
+      item: "ANALIZAR CASO · FOCO, HUÉSPED Y EXPOSICIÓN [ITEM]",
+      diagnostico: "INFERIR MECANISMO · DECLARAR HIPÓTESIS [MERCY]"
+    };
+
     function abrirMenu(nombre) {
       estadoJuego.pantalla = "menu";
       estadoJuego.menu = nombre;
       estadoJuego.seleccion = 0;
+      const opciones = obtenerOpcionesMenu().map(function (opcion) { return opcion.nombre; }).join(" · ");
+      Accesibilidad.anunciar((TITULOS_MENU[nombre] || nombre.toUpperCase()) + ". Opciones: " + opciones + ".");
     }
 
     function abrirMenuTratamiento() {
@@ -2002,10 +2248,9 @@
       const eraPrimeraEleccion = estadoJuego.antibioticosUsados.length === 0;
       const escaloSinControlDeFoco = !eraPrimeraEleccion && !estadoJuego.focoEvaluado;
       let alertaAmenaza = "";
-      if (!estadoJuego.mecanismoDeclarado && eraPrimeraEleccion) {
-        estadoJuego.tratamientoAntesDeInferir = true;
-        alertaAmenaza = registrarErrorClinico("se eligió tratamiento antes de inferir el mecanismo");
-      }
+      // Nota: "elegir tratamiento antes de inferir" ya no puede ocurrir aquí:
+      // abrirMenuTratamiento()/prepararAntibiotico() bloquean FIGHT sin mecanismo
+      // declarado. La regla se aplica en la interfaz, no en la calificación.
 
       const clasesConError = ["inactiva", "trampa", "exceso", "toxicidad", "foco"];
       const esTratamientoOptimoEnEsteMomento = antibiotico.clase === "optima" && !estadoJuego.evolucionada;
@@ -2063,7 +2308,7 @@
 
       estadoJuego.tratamientoOptimo = esTratamientoOptimoEnEsteMomento;
       if (estadoJuego.tratamientoOptimo) {
-        const maximoPorInferencia = estadoJuego.mecanismoCorrecto && !estadoJuego.tratamientoAntesDeInferir ? 30 : 15;
+        const maximoPorInferencia = estadoJuego.mecanismoCorrecto ? 30 : 15;
         estadoJuego.puntosTratamiento = Math.max(0, maximoPorInferencia - estadoJuego.penalizacionTratamiento);
       } else if (antibiotico.clase === "razonable") {
         const puntosRazonables = estadoJuego.mecanismoCorrecto ? 23 : 11;
@@ -2089,9 +2334,6 @@
       }
       if (carbapenemicoComprometido) {
         mensajes.push("La pérdida de porinas reduce ahora la entrada del carbapenémico. La presión selectiva cambió el tablero.");
-      }
-      if (estadoJuego.tratamientoAntesDeInferir && eraPrimeraEleccion) {
-        mensajes.push("El fármaco fue elegido antes de declarar el mecanismo: puede ser activo, pero fue una apuesta, no una inferencia.");
       }
       if (alertaAmenaza) mensajes.push(alertaAmenaza);
       if (estadoJuego.presionSelectiva >= 100 && !estadoJuego.evolucionada) {
@@ -2187,6 +2429,7 @@
       estadoJuego.patronPendiente = patron || CONTENIDO_CLINICO.encuentro.patronBase;
       estadoJuego.fraseAtaque = elegirAleatorio(CONTENIDO_CLINICO.encuentro.frasesAtaque);
       estadoJuego.seleccion = 0;
+      Accesibilidad.anunciar("Alerta de deterioro clínico. " + estadoJuego.fraseAtaque + " Presiona Enter para iniciar la defensa del paciente.");
     }
 
     function comenzarAtaque() {
@@ -2209,20 +2452,25 @@
       estadoJuego.punteroPresionado = false;
       estadoJuego.objetivoPuntero.x = estadoJuego.corazon.x;
       estadoJuego.objetivoPuntero.y = estadoJuego.corazon.y;
+      Accesibilidad.anunciar(
+        "Fase de defensa: usa flechas, WASD o arrastra para esquivar durante " +
+        Math.ceil(estadoJuego.duracionBalas / 1000) + " segundos."
+      );
     }
 
     function crearBala(x, y, velocidadX, velocidadY, radio, tipo, dano, opciones) {
       const detalles = opciones || {};
+      const factor = factorMovimiento();
       estadoJuego.balas.push({
         x: x,
         y: y,
-        velocidadX: velocidadX,
-        velocidadY: velocidadY,
+        velocidadX: velocidadX * factor,
+        velocidadY: velocidadY * factor,
         radio: radio || 5,
         tipo: tipo || "infeccion",
         dano: dano || 4,
         angulo: detalles.angulo || 0,
-        giro: detalles.giro || 0,
+        giro: (detalles.giro || 0) * factor,
         fase: detalles.fase || 0,
         amplitud: detalles.amplitud || 0,
         homing: detalles.homing || false
@@ -2616,7 +2864,7 @@
           const dx = estadoJuego.corazon.x - bala.x;
           const dy = estadoJuego.corazon.y - bala.y;
           const distancia = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-          const aceleracion = 18 + nivel * 4;
+          const aceleracion = (18 + nivel * 4) * factorMovimiento();
           bala.velocidadX += dx / distancia * aceleracion * segundos;
           bala.velocidadY += dy / distancia * aceleracion * segundos;
         }
@@ -2682,7 +2930,7 @@
       total = limitar(Math.round(total), 0, 100);
 
       let rango = "D";
-      if (porMercy && total >= 90 && !estadoJuego.tratamientoAntesDeInferir) rango = "S";
+      if (porMercy && total >= 90) rango = "S";
       else if (total >= 80) rango = "A";
       else if (total >= 70) rango = "B";
       else if (total >= 60) rango = "C";
@@ -2701,7 +2949,6 @@
         mecanismoCorrecto: estadoJuego.mecanismoCorrecto,
         puntosInferencia: estadoJuego.puntosInferencia,
         puntosTratamiento: estadoJuego.puntosTratamiento,
-        tratamientoAntesDeInferir: estadoJuego.tratamientoAntesDeInferir,
         victoria: victoria,
         porMercy: porMercy,
         total: total,
@@ -2731,6 +2978,16 @@
       estadoJuego.pantalla = "resumen";
       estadoJuego.menu = "resumen";
       estadoJuego.balas = [];
+      ResistomaAnalytics.registrarEncuentro(estadoJuego.resumen, {
+        modoPractica: estadoJuego.modoPractica,
+        duracionMs: Math.round(performance.now() - estadoJuego.inicioEncuentroMs)
+      });
+      const r = estadoJuego.resumen;
+      Accesibilidad.anunciar(
+        (r.victoria ? "Encuentro resuelto. " : "Paciente deteriorado. ") +
+        "Rango " + r.rango + ", puntaje " + r.total + " sobre 100. " + r.explicacion,
+        true
+      );
     }
 
     /* ================================================================
@@ -2768,15 +3025,40 @@
         }
       });
 
+      const indiceBotonPractica = progresoCampania.maximoDesbloqueado + 1;
+      registrarBoton(
+        42, 502, 872, 34,
+        "MICROLEARNING · PRÁCTICA RÁPIDA (3-5 MIN) · CASO ALEATORIO YA DESBLOQUEADO",
+        iniciarPracticaRapida,
+        estadoJuego.seleccion === indiceBotonPractica
+      );
+
       dibujarTexto("9 encuentros · susceptible → MDR → CRE/XDR · el jefe cambia de forma al reintentar", 42, 548, 10, COLOR.principal);
       dibujarTexto("CLIC: seleccionar · ENTER: iniciar · la dificultad clínica y motora aumentan por separado", 42, 570, 10, COLOR.medio);
     }
 
+    const META_MICROLEARNING_MS = 5 * 60 * 1000;
+
+    function formatearDuracion(ms) {
+      const totalSegundos = Math.max(0, Math.floor(ms / 1000));
+      const minutos = Math.floor(totalSegundos / 60);
+      const segundos = totalSegundos % 60;
+      return minutos + ":" + (segundos < 10 ? "0" : "") + segundos;
+    }
+
     function dibujarCabecera() {
       dibujarTexto("RESISTOMA", 28, 18, 23, COLOR.fuerte);
-      dibujarTexto("FENOTIPO ANTES QUE FÁRMACO", 28, 47, 11, COLOR.medio);
+      dibujarTexto(
+        estadoJuego.modoPractica ? "PRÁCTICA RÁPIDA · MICROLEARNING" : "FENOTIPO ANTES QUE FÁRMACO",
+        28, 47, 11, estadoJuego.modoPractica ? COLOR.exito : COLOR.medio
+      );
       dibujarTexto(CONTENIDO_CLINICO.encuentro.capitulo, 932, 20, 10, COLOR.principal, "right");
       dibujarTexto("ENCUENTRO " + (indiceEncuentroActual + 1) + "/" + CONTENIDO_CLINICO.encuentros.length + " · " + CONTENIDO_CLINICO.encuentro.nivelResistencia, 932, 43, 10, COLOR.medio, "right");
+      const transcurridoMs = performance.now() - estadoJuego.inicioEncuentroMs;
+      dibujarTexto(
+        "⏱ " + formatearDuracion(transcurridoMs) + " / meta 5:00",
+        932, 60, 9, transcurridoMs > META_MICROLEARNING_MS ? COLOR.alerta : COLOR.tenue, "right"
+      );
       contexto.strokeStyle = COLOR.tenue;
       contexto.beginPath();
       contexto.moveTo(28, 68);
@@ -2952,13 +3234,7 @@
       contexto.fillStyle = COLOR.fondo;
       contexto.fillRect(18, 76, 924, 510);
       dibujarMarco(20, 78, 920, 500, COLOR.principal, 3);
-      const titulosMenu = {
-        act: "LABORATORIO · PRUEBAS DISPONIBLES [ACT]",
-        fight: "TRATAMIENTO · ELEGIR ESQUEMA [FIGHT]",
-        item: "ANALIZAR CASO · FOCO, HUÉSPED Y EXPOSICIÓN [ITEM]",
-        diagnostico: "INFERIR MECANISMO · DECLARAR HIPÓTESIS [MERCY]"
-      };
-      dibujarTexto(titulosMenu[estadoJuego.menu] || estadoJuego.menu.toUpperCase(), 42, 96, 17, COLOR.fuerte);
+      dibujarTexto(TITULOS_MENU[estadoJuego.menu] || estadoJuego.menu.toUpperCase(), 42, 96, 17, COLOR.fuerte);
       dibujarTexto("Selecciona con flechas o clic · ESC para volver", 918, 101, 10, COLOR.medio, "right");
 
       const opciones = obtenerOpcionesMenu();
@@ -3342,10 +3618,6 @@
         dibujarTexto("100/100 BLOQUEADO · HUBO CORRECCIONES, DECISIONES NO ÓPTIMAS O DAÑO.", 380, yAviso, 9, COLOR.alerta);
         yAviso += 22;
       }
-      if (resumen.tratamientoAntesDeInferir) {
-        dibujarTextoEnvuelto("ALERTA: elegiste el antimicrobiano antes de declarar el mecanismo. Acertar no equivale a inferir.", 380, yAviso, 500, 10, COLOR.fuerte, 15, 2);
-        yAviso += 34;
-      }
       if (!resumen.porMercy && resumen.victoria && yAviso < 500) {
         dibujarTextoEnvuelto("La bacteria fue eliminada a fuerza de fármacos. La próxima meta es resolver con mínima presión selectiva.", 380, yAviso, 500, 10, COLOR.medio, 15, 3);
       }
@@ -3403,7 +3675,8 @@
 
     function activarSeleccionActual() {
       if (estadoJuego.pantalla === "campania") {
-        seleccionarEncuentroCampania(estadoJuego.seleccion);
+        if (estadoJuego.seleccion === progresoCampania.maximoDesbloqueado + 1) iniciarPracticaRapida();
+        else seleccionarEncuentroCampania(estadoJuego.seleccion);
         return;
       }
       if (estadoJuego.pantalla === "turno") {
@@ -3429,7 +3702,8 @@
 
     function moverSeleccion(direccion) {
       if (estadoJuego.pantalla === "campania") {
-        const totalDisponibles = progresoCampania.maximoDesbloqueado + 1;
+        // +1: incluye el botón de práctica rápida al final de la cuadrícula.
+        const totalDisponibles = progresoCampania.maximoDesbloqueado + 2;
         estadoJuego.seleccion = (estadoJuego.seleccion + direccion + totalDisponibles) % totalDisponibles;
         return;
       }
@@ -3572,6 +3846,17 @@
 
     iniciarJuego();
     requestAnimationFrame(bucle);
+
+    // Asa de depuración/integración de solo lectura: útil para instructores o
+    // pruebas automatizadas que quieran leer el estado sin acoplarse a las
+    // ~150 funciones internas del motor. No se usa desde dentro del juego.
+    window.Resistoma = {
+      version: CONTENIDO_CLINICO.version,
+      obtenerEstado: function () { return JSON.parse(JSON.stringify(estadoJuego)); },
+      obtenerEncuentroActual: function () { return CONTENIDO_CLINICO.encuentro.id; },
+      obtenerProgreso: function () { return JSON.parse(JSON.stringify(progresoCampania)); }
+    };
+    })();
   </script>
 </body>
 </html>
