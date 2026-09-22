@@ -2316,6 +2316,33 @@
       }
     }
 
+    // Pestaña de carpeta: un trapecio (más angosto arriba) en vez de un
+    // rectángulo, para que el mapa de campaña se lea como fichero/carpetario
+    // en vez de una cuadrícula de cuadrados. Solo "navega" (cambia qué
+    // expediente se previsualiza abajo); abrir el caso es una acción aparte
+    // ("ABRIR EXPEDIENTE"), registrada con registrarBoton normal.
+    function registrarPestanaCarpeta(x, y, ancho, alto, numero, accion, seleccionado, bloqueado, colorEstado) {
+      botonesActivos.push({ x: x, y: y, ancho: ancho, alto: alto, accion: accion });
+      const inset = Math.min(10, ancho / 6);
+      const colorBorde = bloqueado ? COLOR.tenue : (seleccionado ? COLOR.fuerte : colorEstado);
+      contexto.fillStyle = seleccionado ? COLOR.sombra : COLOR.panel;
+      contexto.beginPath();
+      contexto.moveTo(x + inset, y);
+      contexto.lineTo(x + ancho - inset, y);
+      contexto.lineTo(x + ancho, y + alto);
+      contexto.lineTo(x, y + alto);
+      contexto.closePath();
+      contexto.fill();
+      contexto.strokeStyle = colorBorde;
+      contexto.lineWidth = seleccionado ? 3 : 2;
+      contexto.stroke();
+      if (seleccionado) {
+        cursorMenuObjetivo = { x: x + ancho / 2 - 9, y: y + alto + 5, bloqueado: !!bloqueado };
+      }
+      const colorTexto = bloqueado ? COLOR.tenue : (seleccionado ? COLOR.fuerte : colorEstado);
+      dibujarTexto(String(numero), x + ancho / 2 - (numero > 9 ? 8 : 4), y + alto / 2 - 6, 12, colorTexto);
+    }
+
     /* ================================================================
        4. SPRITES PIXELADOS GENERADOS POR CÓDIGO
        ================================================================ */
@@ -4126,66 +4153,117 @@
 
     function dibujarCampania() {
       dibujarTexto("RESISTOMA", 42, 28, 28, COLOR.fuerte);
-      dibujarTexto("CAMPAÑA CLÍNICA · DEL FENOTIPO BASAL A LA RESISTENCIA", 42, 65, 12, COLOR.medio);
-      dibujarTexto("Cada encuentro resuelto desbloquea el siguiente. Tu progreso queda guardado en este navegador.", 42, 91, 10, COLOR.principal);
+      dibujarTexto("CAMPAÑA CLÍNICA · ARCHIVO DE CASOS", 42, 62, 12, COLOR.medio);
 
-      // Con tarjetas más angostas, el nombre completo del organismo ya no
-      // cabe en una línea: se abrevia el género (Escherichia coli -> E.
-      // coli). Los nombres ya combinados ("E. coli / K. pneumoniae") se
-      // dejan como están.
-      const abreviarOrganismo = function (nombre) {
-        if (nombre.indexOf(".") >= 0 || nombre.indexOf("/") >= 0) return nombre;
-        const partes = nombre.split(" ");
-        return partes.length < 2 ? nombre : partes[0][0] + ". " + partes.slice(1).join(" ");
-      };
-      // 4 columnas en vez de 3: deja lugar a más encuentros (capítulos
-      // nuevos) sin que una cuarta fila se salga del lienzo de 600px.
-      const columnas = 4;
-      const anchoTarjeta = 208;
-      const altoTarjeta = 98;
+      const totalEncuentros = CONTENIDO_CLINICO.encuentros.length;
+
+      // Fila de pestañas de carpeta: solo cambian qué expediente se
+      // previsualiza en el panel grande de abajo. Se puede navegar (no
+      // abrir) incluso hacia casos bloqueados, para ver qué sigue en el
+      // archivo sin poder acceder todavía.
+      const tabY = 92;
+      const tabAlto = 38;
+      const tabHueco = 6;
+      const tabAncho = (876 - tabHueco * (totalEncuentros - 1)) / totalEncuentros;
       CONTENIDO_CLINICO.encuentros.forEach(function (encuentro, indice) {
         const desbloqueado = indice <= progresoCampania.maximoDesbloqueado;
-        const columna = indice % columnas;
-        const fila = Math.floor(indice / columnas);
-        const x = 42 + columna * 228;
-        const y = 120 + fila * 139;
         const mejor = progresoCampania.mejoresPuntajes[encuentro.id];
-        const etiqueta = desbloqueado
-          ? ((indice + 1) + " · " + abreviarOrganismo(encuentro.microorganismo) + "\n" + encuentro.nivelResistencia)
-          : ((indice + 1) + " · BLOQUEADO\nRESUELVE EL ANTERIOR");
-        registrarBoton(
-          x,
-          y,
-          anchoTarjeta,
-          altoTarjeta,
-          etiqueta,
-          function () { seleccionarEncuentroCampania(indice); },
+        const colorEstado = desbloqueado ? (mejor ? COLOR.exito : COLOR.medio) : COLOR.tenue;
+        const tabX = 42 + indice * (tabAncho + tabHueco);
+        registrarPestanaCarpeta(
+          tabX, tabY, tabAncho, tabAlto,
+          indice + 1,
+          function () { estadoJuego.seleccion = indice; },
           estadoJuego.seleccion === indice,
-          !desbloqueado
+          !desbloqueado,
+          colorEstado
         );
-        if (desbloqueado) {
-          dibujarTexto(encuentro.capitulo, x + 12, y + 56, 8, COLOR.tenue);
-          dibujarTexto(mejor ? "MEJOR " + mejor + "/100" : "NUEVO CASO", x + 12, y + 76, 9, mejor ? COLOR.exito : COLOR.medio);
-        }
       });
 
-      const indiceBotonPractica = progresoCampania.maximoDesbloqueado + 1;
-      const indiceBotonReinicio = progresoCampania.maximoDesbloqueado + 2;
+      // Panel grande: el expediente actualmente examinado. Si la selección
+      // está sobre "práctica rápida" o "reiniciar" (índices posteriores a
+      // los encuentros), se sigue mostrando el último expediente visto en
+      // vez de dejar el panel vacío.
+      const indiceExpediente = Math.min(estadoJuego.seleccion, totalEncuentros - 1);
+      const encuentro = CONTENIDO_CLINICO.encuentros[indiceExpediente];
+      const desbloqueado = indiceExpediente <= progresoCampania.maximoDesbloqueado;
+      const mejor = progresoCampania.mejoresPuntajes[encuentro.id];
+      const numeroCapitulo = parseInt((encuentro.capitulo.match(/\d+/) || ["1"])[0], 10);
+      const colorSeveridad = numeroCapitulo <= 1 ? COLOR.exito : (numeroCapitulo <= 3 ? COLOR.medio : COLOR.alerta);
+      const colorPanel = !desbloqueado ? COLOR.tenue : (mejor ? COLOR.exito : COLOR.medio);
+
+      const panelX = 42, panelY = 140, panelW = 876, panelH = 300;
+      contexto.fillStyle = colorPanel;
+      contexto.fillRect(panelX, panelY, panelW, 6);
+      contexto.fillStyle = COLOR.panel;
+      contexto.fillRect(panelX, panelY + 6, panelW, panelH - 6);
+      dibujarMarco(panelX, panelY, panelW, panelH, colorPanel, 2);
+
+      dibujarTexto("EXPEDIENTE Nº " + (indiceExpediente + 1) + " / " + totalEncuentros, panelX + 24, panelY + 22, 11, COLOR.tenue);
+
+      if (desbloqueado) {
+        dibujarTexto(encuentro.microorganismo, panelX + 24, panelY + 44, 24, COLOR.fuerte);
+        dibujarTexto(encuentro.capitulo, panelX + 24, panelY + 78, 10, COLOR.tenue);
+
+        contexto.font = "700 12px 'Cascadia Mono', Consolas, 'Liberation Mono', 'Courier New', monospace";
+        const anchoEtiquetaNivel = contexto.measureText(encuentro.nivelResistencia).width + 24;
+        dibujarMarco(panelX + 24, panelY + 96, anchoEtiquetaNivel, 26, colorSeveridad, 2);
+        dibujarTexto(encuentro.nivelResistencia, panelX + 36, panelY + 103, 12, colorSeveridad);
+
+        const teaser = (encuentro.introduccion && encuentro.introduccion[1]) || "";
+        dibujarTextoEnvuelto(teaser, panelX + 24, panelY + 142, panelW - 300, 12, COLOR.principal, 18, 3);
+
+        dibujarTexto(mejor ? "MEJOR PUNTAJE: " + mejor + "/100" : "SIN RESOLVER TODAVÍA", panelX + 24, panelY + panelH - 34, 11, mejor ? COLOR.exito : COLOR.medio);
+
+        // Sello rotado, como un timbre de archivo sobre la carátula.
+        contexto.save();
+        contexto.translate(panelX + panelW - 100, panelY + 56);
+        contexto.rotate(-0.15);
+        const textoSello = mejor ? "RESUELTO" : "NUEVO CASO";
+        dibujarMarco(-62, -16, 124, 32, colorPanel, 2);
+        dibujarTexto(textoSello, -54, -7, 11, colorPanel);
+        contexto.restore();
+
+        registrarBoton(
+          panelX + panelW - 246, panelY + panelH - 58, 222, 42,
+          "ABRIR EXPEDIENTE →",
+          function () { seleccionarEncuentroCampania(indiceExpediente); },
+          false
+        );
+      } else {
+        dibujarTexto(encuentro.microorganismo, panelX + 24, panelY + 44, 24, COLOR.tenue);
+        dibujarTexto(encuentro.capitulo, panelX + 24, panelY + 78, 10, COLOR.tenue);
+        dibujarTextoEnvuelto(
+          "Resuelve el expediente anterior para desclasificar este caso.",
+          panelX + 24, panelY + 142, panelW - 300, 12, COLOR.tenue, 18, 3
+        );
+
+        contexto.save();
+        contexto.translate(panelX + panelW - 100, panelY + 56);
+        contexto.rotate(-0.15);
+        dibujarMarco(-70, -16, 140, 32, COLOR.alerta, 2);
+        dibujarTexto("CLASIFICADO", -62, -7, 11, COLOR.alerta);
+        contexto.restore();
+      }
+
+      const indiceBotonPractica = totalEncuentros;
+      const indiceBotonReinicio = totalEncuentros + 1;
+      const filaBotonesY = panelY + panelH + 12;
       registrarBoton(
-        42, 502, 636, 34,
+        42, filaBotonesY, 636, 34,
         "MICROLEARNING · PRÁCTICA RÁPIDA (3-5 MIN) · CASO ALEATORIO YA DESBLOQUEADO",
         iniciarPracticaRapida,
         estadoJuego.seleccion === indiceBotonPractica
       );
       registrarBoton(
-        690, 502, 224, 34,
+        690, filaBotonesY, 224, 34,
         "⟲ REINICIAR PROGRESO",
         pedirConfirmacionReinicio,
         estadoJuego.seleccion === indiceBotonReinicio
       );
 
-      dibujarTexto(CONTENIDO_CLINICO.encuentros.length + " encuentros · susceptible → MDR → CRE/XDR → no fermentadores", 42, 548, 10, COLOR.principal);
-      dibujarTexto("CLIC: seleccionar · ENTER: iniciar · la dificultad clínica y motora aumentan por separado", 42, 570, 10, COLOR.medio);
+      dibujarTexto(totalEncuentros + " expedientes · susceptible → MDR → CRE/XDR → no fermentadores", 42, filaBotonesY + 46, 10, COLOR.principal);
+      dibujarTexto("← → o clic en una pestaña: examinar expediente · ENTER o ABRIR EXPEDIENTE: iniciar el caso", 42, filaBotonesY + 66, 10, COLOR.medio);
     }
 
     const META_MICROLEARNING_MS = 5 * 60 * 1000;
@@ -4946,7 +5024,14 @@
         estadoJuego.cursorMenuX = cursorMenuObjetivo.x;
         estadoJuego.cursorMenuY = cursorMenuObjetivo.y;
       } else {
-        const segundos = Math.min(40, delta || 16) / 1000;
+        // Sin límite artificial de delta: un límite bajo (antes 40ms) hacía
+        // que cualquier variación normal de framerate (frames de 25-40ms+)
+        // redujera la velocidad EFECTIVA en pantalla muy por debajo de
+        // "velocidad", dando la sensación de que el cursor se arrastra o se
+        // traba. Como la rama de arriba ya hace "snap" cuando distancia <=
+        // avance, ni siquiera una pausa larga (pestaña en segundo plano)
+        // puede producir un salto raro: como mucho aparece ya en el destino.
+        const segundos = (delta || 16) / 1000;
         const velocidad = 780 * factorMovimiento();
         const dx = cursorMenuObjetivo.x - estadoJuego.cursorMenuX;
         const dy = cursorMenuObjetivo.y - estadoJuego.cursorMenuY;
@@ -5031,8 +5116,11 @@
     function activarSeleccionActual() {
       dispararPulsoCursor();
       if (estadoJuego.pantalla === "campania") {
-        if (estadoJuego.seleccion === progresoCampania.maximoDesbloqueado + 2) pedirConfirmacionReinicio();
-        else if (estadoJuego.seleccion === progresoCampania.maximoDesbloqueado + 1) iniciarPracticaRapida();
+        const totalEncuentros = CONTENIDO_CLINICO.encuentros.length;
+        if (estadoJuego.seleccion === totalEncuentros + 1) pedirConfirmacionReinicio();
+        else if (estadoJuego.seleccion === totalEncuentros) iniciarPracticaRapida();
+        // Sobre un expediente bloqueado, seleccionarEncuentroCampania() ya
+        // ignora la petición sin abrir nada (mismo criterio que siempre).
         else seleccionarEncuentroCampania(estadoJuego.seleccion);
         return;
       }
@@ -5070,8 +5158,11 @@
 
     function moverSeleccion(direccion) {
       if (estadoJuego.pantalla === "campania") {
-        // +2: incluye práctica rápida y reiniciar progreso al final de la cuadrícula.
-        const totalDisponibles = progresoCampania.maximoDesbloqueado + 3;
+        // +2: incluye práctica rápida y reiniciar progreso al final del
+        // archivo. A diferencia de antes, se puede EXAMINAR (no abrir)
+        // cualquier expediente, incluidos los aún bloqueados: el archivo
+        // completo es visible, solo su contenido queda clasificado.
+        const totalDisponibles = CONTENIDO_CLINICO.encuentros.length + 2;
         estadoJuego.seleccion = (estadoJuego.seleccion + direccion + totalDisponibles) % totalDisponibles;
         return;
       }
@@ -5215,7 +5306,15 @@
        ================================================================ */
 
     function bucle(tiempoActual) {
-      const delta = Math.min(40, tiempoActual - ultimoTiempo);
+      // El límite era 40ms (equivalente a forzar el reloj del juego a no
+      // pasar de 25 fps "simulados"): cualquier caída normal de framerate
+      // por debajo de eso -habitual en un lienzo con tantos sprites por
+      // frame- hacía que el juego avanzara en cámara lenta hasta que el
+      // framerate se recuperaba. Con el cursor de menú ahora deslizándose
+      // (antes era estático), ese efecto se percibía como si el cursor "se
+      // trabara". 100ms sigue evitando saltos extremos (pestaña en segundo
+      // plano) sin penalizar la variación normal de framerate.
+      const delta = Math.min(100, tiempoActual - ultimoTiempo);
       ultimoTiempo = tiempoActual;
       actualizarMaquinaEscribir(delta);
       actualizarFaseBalas(delta);
