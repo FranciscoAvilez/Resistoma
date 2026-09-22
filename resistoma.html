@@ -236,7 +236,8 @@
       OXA48: "Carbapenemasa de serina clase D; inhibida por avibactam, no por vaborbactam/relebactam.",
       PORINAS: "Pérdida de porinas (± BLEE/AmpC) que reduce la entrada de carbapenémicos sin ser una carbapenemasa.",
       EFLUJO: "Bombas de expulsión activa que sacan el fármaco antes de que actúe; afecta varias clases a la vez.",
-      MBL_INTRINSECA: "Enzimas cromosómicas de fábrica (no adquiridas): inactivan casi todos los betalactámicos, incluidos carbapenémicos."
+      MBL_INTRINSECA: "Enzimas cromosómicas de fábrica (no adquiridas): inactivan casi todos los betalactámicos, incluidos carbapenémicos.",
+      OXA_CHC: "Carbapenemasa de clase D tipo OXA-23/24/58, propia de Acinetobacter: familia genéticamente distinta de OXA-48-like (Enterobacterales); no inhibida por avibactam/vaborbactam/relebactam."
     };
 
     function crearPruebasFenotipoBasal(detalle) {
@@ -1613,6 +1614,232 @@
           { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local; S. maltophilia puede colonizar equipo respiratorio compartido.", puntos: 3 }
         ],
         explicacionFinal: "Stenotrophomonas maltophilia con resistencia intrínseca cromosómica {GEN}: L1 y L2 explican la resistencia a prácticamente todos los betalactámicos, incluidos los carbapenémicos, sin necesidad de un gen adquirido. Pedir mCIM, inmunocromatografía o PCR de carbapenemasas aquí fue de bajo o nulo rendimiento: el fenotipo ya era predecible desde la identificación de la especie. TMP-SMX fue el esquema dirigido de primera línea; levofloxacino, minociclina y cefiderocol son alternativas razonables."
+      }, {
+        id: "pseudomonas_porinas",
+        capitulo: "CAPÍTULO 5 · NO FERMENTADORES",
+        nivelResistencia: "CRPA · NO CARBAPENEMASA",
+        dificultad: { amenazaBase: 18, creditosLaboratorio: 6, gastoLaboratorioIdeal: 2 },
+        spriteId: "pseudomonas",
+        patronBase: "porinas",
+        muestra: "ASPIRADO TRAQUEAL",
+        microorganismo: "Pseudomonas aeruginosa",
+        mecanismoReal: "PORINAS",
+        nombreMecanismo: "Pérdida de OprD (sin carbapenemasa)",
+        variantesGeneticas: ["oprD mutado/truncado", "MexAB-OprM en expresión basal, no clínicamente relevante"],
+        introduccion: [
+          "CAPÍTULO 5 · UCI PEDIÁTRICA // UN NO FERMENTADOR CLÁSICO",
+          "Paciente de 11 años con neumonía asociada a ventilador por Pseudomonas aeruginosa, en el día 10 de ventilación mecánica.",
+          "El antibiograma muestra carbapenémicos resistentes, pero cefalosporinas antipseudomónicas conservadas. Antes de escalar a la reserva, decide si esto es realmente una carbapenemasa.",
+          "P. aeruginosa no es un Enterobacterales: aquí ampicilina y ceftriaxona nunca fueron opciones, sin importar el mecanismo adquirido."
+        ],
+        pistaDiagnostica: "Meropenem resistente con ceftazidima, cefepima y piperacilina-tazobactam conservados, mCIM negativa y paneles moleculares negativos apoyan pérdida de OprD, la porina que privilegian los carbapenémicos para entrar. No es una carbapenemasa: es un defecto de permeabilidad selectivo para esa clase.",
+        pistaHipotesisIncorrecta: "Resistencia a carbapenémicos en Pseudomonas no siempre es KPC, MBL u OXA. Cuando el resto del espectro betalactámico se conserva y las pruebas de carbapenemasa son negativas, la explicación más coherente es la pérdida de una porina específica.",
+        frasesAtaque: [
+          "CERRÉ LA ÚNICA PUERTA QUE LOS CARBAPENÉMICOS SABÍAN USAR.",
+          "SIGO SIENDO SENSIBLE A CASI TODO LO DEMÁS. ESA ES LA PISTA.",
+          "DIEZ DÍAS DE VENTILADOR Y AÚN CREES QUE SOY UNA ENTEROBACTERIA."
+        ],
+        paciente: {
+          edad: "11 años",
+          sindrome: "Neumonía asociada a ventilador (10.º día de ventilación mecánica)",
+          estado: "Estable con soporte ventilatorio, sin choque",
+          foco: "Pulmonar; aspirado traqueal purulento sin empiema",
+          funcionRenal: "TFGe conservada"
+        },
+        antibiograma: [
+          { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Resistencia intrínseca" },
+          { farmaco: "Cefazolina", cim: ">16", clsi: "R", eucast: "R", nota: "Resistencia intrínseca" },
+          { farmaco: "Cefuroxima", cim: ">16", clsi: "R", eucast: "R", nota: "Resistencia intrínseca" },
+          { farmaco: "Ceftriaxona", cim: ">32", clsi: "R", eucast: "R", nota: "Sin actividad antipseudomónica" },
+          { farmaco: "Ceftazidima", cim: "4", clsi: "S", eucast: "S", nota: "Conservada" },
+          { farmaco: "Cefepima", cim: "4", clsi: "S", eucast: "S", nota: "Conservada" },
+          { farmaco: "Piperacilina-tazobactam", cim: "16/4", clsi: "S", eucast: "S", nota: "Conservada" },
+          { farmaco: "Ertapenem", cim: ">4", clsi: "R", eucast: "R", nota: "Resistencia intrínseca: sin cobertura antipseudomónica" },
+          { farmaco: "Meropenem", cim: "8", clsi: "R", eucast: "R", nota: "Discordante con el resto del espectro betalactámico" },
+          { farmaco: "Meropenem-vaborbactam", cim: "8/8", clsi: "R", eucast: "R", nota: "Vaborbactam no restaura la entrada por OprD" },
+          { farmaco: "Imipenem-relebactam", cim: "4/4", clsi: "R", eucast: "R", nota: "Relebactam no compensa la pérdida de OprD" },
+          { farmaco: "Ceftazidima-avibactam", cim: "4/4", clsi: "S", eucast: "S", nota: "Activo; reserva innecesaria aquí" },
+          { farmaco: "Ceftolozano-tazobactam", cim: "2/4", clsi: "S", eucast: "S", nota: "Activo; reserva innecesaria aquí" },
+          { farmaco: "Cefiderocol", cim: "1", clsi: "S", eucast: "S", nota: "Activo; evade porinas y eflujo" },
+          { farmaco: "Amikacina", cim: "8", clsi: "S", eucast: "S", nota: "Activa; toxicidad limita monoterapia" },
+          { farmaco: "Levofloxacino", cim: ">4", clsi: "R", eucast: "R", nota: "Corresistencia por eflujo basal" },
+          { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Resistencia intrínseca" },
+          { farmaco: "Minociclina", cim: ">8", clsi: "R", eucast: "R", nota: "Actividad no confiable frente a Pseudomonas" },
+          { farmaco: "Ampicilina-sulbactam", cim: ">32/16", clsi: "R", eucast: "R", nota: "Sin actividad antipseudomónica" },
+          { farmaco: "Polimixina B/colistina", cim: "1", clsi: "—", eucast: "S", nota: "Última línea; reservar" }
+        ],
+        pruebas: [
+          { id: "doble_disco", nombre: "Sinergia de doble disco", costo: 1, resultado: "NEGATIVA: sin expansión hacia clavulanato.", interpretacion: "No apoya BLEE; es infrecuente como mecanismo primario en P. aeruginosa." },
+          { id: "mcim_ecim", nombre: "mCIM + eCIM", costo: 2, resultado: "mCIM NEGATIVA; eCIM no interpretable.", interpretacion: "No demuestra carbapenemasa. La resistencia selectiva a carbapenémicos ya sugería otra explicación." },
+          { id: "apba_edta", nombre: "Inhibición APBA + EDTA", costo: 1, resultado: "APBA NEGATIVA / EDTA NEGATIVA.", interpretacion: "No apoya KPC/AmpC ni MBL." },
+          { id: "inmunocromatografia", nombre: "Inmunocromatografía CRE", costo: 2, resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.", interpretacion: "Resultado esperado: ningún gen incluido en el panel explica una pérdida de porina." },
+          { id: "pcr", nombre: "PCR de carbapenemasas", costo: 3, resultado: "Genes de carbapenemasa incluidos: NO DETECTADOS.", interpretacion: "No descarta pérdida de OprD; confirma que no se encontró una carbapenemasa objetivo." }
+        ],
+        mecanismosSeleccionables: [
+          { id: "PORINAS", nombre: "Pérdida de OprD (sin carbapenemasa)" },
+          { id: "KPC", nombre: "KPC · clase A" },
+          { id: "MBL", nombre: "NDM/VIM/IMP · clase B" },
+          { id: "OXA48", nombre: "OXA-48-like · clase D" },
+          { id: "EFLUJO", nombre: "Sobreexpresión de bombas de eflujo (MexAB-OprM)" },
+          { id: "AmpC_desreprimida", nombre: "AmpC cromosómica desreprimida" }
+        ],
+        terapias: crearTerapiasAvanzadas({
+          optima: ["cefepima"],
+          razonable: ["ceftazidima", "piptazo"],
+          foco: ["fosfomicina", "nitrofurantoina"],
+          toxicidad: ["amikacina", "polimixina"],
+          inactiva: ["ampicilina", "cefazolina", "cefuroxima", "ceftriaxona", "ertapenem", "meropenem", "mvb", "irl", "tmp_smx", "levofloxacino", "minociclina", "ampicilina_sulbactam"],
+          mensajes: {
+            cefepima: "Conserva actividad frente a P. aeruginosa y no depende de OprD para entrar: es la opción dirigida más estrecha entre las activas.",
+            ceftazidima: "Activa y antipseudomónica clásica; razonable, aunque cefepima ofrece mejor estabilidad si el tratamiento se prolonga.",
+            piptazo: "Activa, aunque con menor margen PK/PD en neumonía grave que un betalactámico de espectro más dirigido.",
+            meropenem: "Resistente por pérdida de OprD: el carbapenémico pierde su vía de entrada preferida sin que exista una carbapenemasa que lo hidrolice.",
+            mvb: "Vaborbactam inhibe KPC, no restaura la entrada por una porina perdida: el resultado sigue siendo resistente.",
+            irl: "Relebactam no compensa un defecto de permeabilidad selectivo para carbapenémicos.",
+            cza: "Es activa, pero se reserva para fenotipos con carbapenemasa demostrada; aquí cefepima ya resuelve el caso.",
+            ceftolozano_tazobactam: "Antipseudomónico de reserva; innecesario cuando cefepima conserva actividad.",
+            cefiderocol: "El sideróforo evade la dependencia de OprD, pero es una reserva de amplio espectro sin indicación aquí.",
+            atmcza: "Diseñada para MBL con betalactamasas acompañantes; no es la respuesta a un defecto de porina aislado.",
+            ertapenem: "Ertapenem nunca tuvo actividad antipseudomónica, con o sin pérdida de OprD.",
+            tmp_smx: "P. aeruginosa es intrínsecamente resistente a TMP-SMX.",
+            levofloxacino: "La corresistencia por eflujo basal ya lo inactiva en este aislamiento, como confirma el antibiograma.",
+            minociclina: "Actividad no confiable frente a P. aeruginosa.",
+            ampicilina_sulbactam: "El sulbactam no aporta actividad antipseudomónica; es un fármaco pensado para Acinetobacter.",
+            amikacina: "Activa, pero la monoterapia en neumonía grave añade nefro/ototoxicidad evitable.",
+            polimixina: "Reservar para cuando no exista una opción betalactámica dirigida, que sí existe aquí."
+          }
+        }),
+        items: [
+          { id: "foco", nombre: "Analizar el foco pulmonar", mensaje: "El aspirado traqueal no muestra empiema ni colección drenable. No hay procedimiento que sustituya al antibiótico dirigido.", puntos: 5 },
+          { id: "cateter", nombre: "Retirar catéter", mensaje: "No hay un catéter vascular implicado en este foco pulmonar. Retirarlo por rutina sería una intervención sin blanco.", puntos: -3 },
+          { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se ajusta cefepima a infusión prolongada para maximizar el tiempo sobre la CIM, clave en infección pulmonar por P. aeruginosa.", puntos: 15 },
+          { id: "aislamiento", nombre: "Precauciones de contacto", mensaje: "Se aplican precauciones de contacto: P. aeruginosa puede colonizar equipo respiratorio y superficies húmedas compartidas.", puntos: 3 }
+        ],
+        explicacionFinal: "Pseudomonas aeruginosa con {GEN}: pérdida de OprD que reduce selectivamente la entrada de carbapenémicos, sin carbapenemasa adquirida. mCIM, inmunocromatografía y PCR negativas, junto con ceftazidima/cefepima/piperacilina-tazobactam conservados, distinguieron este defecto de permeabilidad de KPC, MBL u OXA-48-like. Cefepima fue el esquema dirigido óptimo; ceftazidima-avibactam, ceftolozano-tazobactam y cefiderocol quedan en reserva para cuando exista una carbapenemasa demostrada."
+      }, {
+        id: "acinetobacter_oxa",
+        capitulo: "CAPÍTULO 5 · NO FERMENTADORES",
+        nivelResistencia: "CRAB · XDR",
+        dificultad: { amenazaBase: 19, creditosLaboratorio: 6, gastoLaboratorioIdeal: 2 },
+        spriteId: "acinetobacter",
+        patronBase: "oxa48",
+        muestra: "HEMOCULTIVO + CULTIVO DE HERIDA",
+        microorganismo: "Acinetobacter baumannii",
+        mecanismoReal: "OXA_CHC",
+        nombreMecanismo: "Carbapenemasa OXA-23-like (clase D), adquirida",
+        variantesGeneticas: ["blaOXA-23", "blaOXA-24/40", "blaOXA-58", "blaOXA-51-like intrínseco (habitualmente silente)"],
+        introduccion: [
+          "CAPÍTULO 5 · UNIDAD DE QUEMADOS // EL TEMOR DE TODA UCI DE TRAUMA",
+          "Paciente de 8 años con quemadura de segundo grado en el 30% de la superficie corporal y bacteriemia secundaria por Acinetobacter baumannii.",
+          "El antibiograma muestra resistencia a prácticamente todo, incluidos los carbapenémicos. Antes de declarar 'sin opciones', separa lo intrínseco de lo adquirido.",
+          "Acinetobacter no tiene flagelos ni urgencia por moverse: sobrevive semanas en superficies secas y coloniza cualquier unidad que se lo permita."
+        ],
+        pistaDiagnostica: "mCIM positiva con eCIM negativa, APBA y EDTA negativas, y detección específica de OXA-23-like confirman una carbapenemasa de clase D adquirida, genéticamente distinta de OXA-48-like (propia de Enterobacterales) y del gen blaOXA-51-like intrínseco y habitualmente silente de la especie.",
+        pistaHipotesisIncorrecta: "No todo gen 'OXA' es igual. blaOXA-51-like es intrínseco y casi siempre silente; blaOXA-23-like es adquirido y explica el fenotipo panresistente. Tampoco asumas MBL o KPC sin que las pruebas los apoyen.",
+        frasesAtaque: [
+          "SOBREVIVO SEMANAS EN UNA BARANDA SECA. TU TRATAMIENTO TIENE HORAS.",
+          "NO NECESITO MOVERME: LA UNIDAD ENTERA VIENE A MÍ.",
+          "TENGO UN GEN OXA DE FÁBRICA Y OTRO QUE PEDÍ PRESTADO. ADIVINA CUÁL EXPLICA ESTO."
+        ],
+        paciente: {
+          edad: "8 años",
+          sindrome: "Bacteriemia secundaria a quemadura de segundo grado (30% SCT)",
+          estado: "Séptico, con requerimiento inicial de soporte vasopresor",
+          foco: "Herida de quemadura extensa; sin colección drenable adicional",
+          funcionRenal: "TFGe en descenso leve; vigilar nefrotoxicidad"
+        },
+        antibiograma: [
+          { farmaco: "Ampicilina-sulbactam", cim: "8/4", clsi: "S", eucast: "S", nota: "Activo a dosis alta; el sulbactam aporta actividad intrínseca" },
+          { farmaco: "Ceftazidima", cim: ">32", clsi: "R", eucast: "R", nota: "Sin actividad frente a CRAB" },
+          { farmaco: "Cefepima", cim: ">32", clsi: "R", eucast: "R", nota: "Sin actividad frente a CRAB" },
+          { farmaco: "Piperacilina-tazobactam", cim: ">64/4", clsi: "R", eucast: "R", nota: "Inactiva" },
+          { farmaco: "Ertapenem", cim: ">4", clsi: "R", eucast: "R", nota: "Sin actividad frente a Acinetobacter" },
+          { farmaco: "Meropenem", cim: ">16", clsi: "R", eucast: "R", nota: "Carbapenemasa adquirida (OXA-23-like)" },
+          { farmaco: "Meropenem-vaborbactam", cim: ">16/8", clsi: "R", eucast: "R", nota: "Vaborbactam no inhibe OXA-23-like" },
+          { farmaco: "Imipenem-relebactam", cim: ">8/4", clsi: "R", eucast: "R", nota: "Relebactam no inhibe esta clase D" },
+          { farmaco: "Ceftazidima-avibactam", cim: ">16/4", clsi: "R", eucast: "R", nota: "Avibactam no restaura actividad frente a OXA-23-like" },
+          { farmaco: "Ceftolozano-tazobactam", cim: ">16/4", clsi: "R", eucast: "R", nota: "Sin actividad frente a Acinetobacter" },
+          { farmaco: "Cefiderocol", cim: "1", clsi: "S", eucast: "S", nota: "Activo; reserva creciente en CRAB" },
+          { farmaco: "Amikacina", cim: "32", clsi: "R", eucast: "R", nota: "Corresistencia frecuente en CRAB" },
+          { farmaco: "Minociclina", cim: "1", clsi: "S", eucast: "S", nota: "Activa; combinación razonable" },
+          { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Corresistencia frecuente" },
+          { farmaco: "Levofloxacino", cim: ">4", clsi: "R", eucast: "R", nota: "Corresistencia frecuente" },
+          { farmaco: "Polimixina B/colistina", cim: "1", clsi: "—", eucast: "S", nota: "Última línea; toxicidad renal relevante" }
+        ],
+        pruebas: [
+          {
+            id: "doble_disco",
+            nombre: "Sinergia de doble disco",
+            costo: 1,
+            resultado: "NO INTERPRETABLE en este género.",
+            interpretacion: "La sinergia con clavulanato no está validada como prueba de rutina en bacilos no fermentadores."
+          },
+          {
+            id: "mcim_ecim",
+            nombre: "mCIM + eCIM",
+            costo: 2,
+            resultado: "mCIM POSITIVA / eCIM NEGATIVA.",
+            interpretacion: "Carbapenemasa de serina o clase D presente, sin patrón de metalo-enzima."
+          },
+          {
+            id: "apba_edta",
+            nombre: "Inhibición APBA + EDTA",
+            costo: 1,
+            resultado: "APBA NEGATIVA / EDTA NEGATIVA.",
+            interpretacion: "No apoya KPC/AmpC ni MBL; orienta a clase D si mCIM es positiva, igual que en OXA-48-like."
+          },
+          {
+            id: "inmunocromatografia",
+            nombre: "Inmunocromatografía CRE",
+            costo: 2,
+            resultado: "OXA-48-like NO DETECTADA; el panel no incluye OXA-23-like.",
+            interpretacion: "Los paneles comerciales de CRE suelen dirigirse a Enterobacterales: un resultado negativo aquí no descarta una carbapenemasa OXA-23-like propia de Acinetobacter."
+          },
+          {
+            id: "pcr",
+            nombre: "PCR de carbapenemasas",
+            costo: 3,
+            resultado: "blaOXA-23-like DETECTADO; blaKPC, blaNDM, blaVIM e blaIMP no detectados.",
+            interpretacion: "Confirmación genotípica específica: distingue el gen adquirido de la variante intrínseca blaOXA-51-like, que este panel dirigido no amplifica."
+          }
+        ],
+        mecanismosSeleccionables: [
+          { id: "OXA_CHC", nombre: "OXA-23-like adquirida (clase D) · CRAB" },
+          { id: "KPC", nombre: "KPC · clase A" },
+          { id: "MBL", nombre: "NDM/VIM/IMP · clase B" },
+          { id: "OXA48", nombre: "OXA-48-like · clase D (Enterobacterales)" },
+          { id: "PORINAS", nombre: "Pérdida de porinas (sin carbapenemasa)" },
+          { id: "EFLUJO", nombre: "Sobreexpresión de bombas de eflujo" }
+        ],
+        terapias: crearTerapiasAvanzadas({
+          optima: ["ampicilina_sulbactam"],
+          razonable: ["minociclina"],
+          toxicidad: ["polimixina"],
+          foco: ["fosfomicina", "nitrofurantoina"],
+          inactiva: ["ceftazidima", "cefepima", "piptazo", "meropenem", "mvb", "irl", "cza", "ceftolozano_tazobactam", "amikacina", "tmp_smx", "levofloxacino", "ampicilina", "cefazolina", "cefuroxima", "ceftriaxona", "ertapenem"],
+          mensajes: {
+            ampicilina_sulbactam: "El sulbactam aporta actividad intrínseca frente a Acinetobacter; a dosis alta es la base terapéutica mejor respaldada para CRAB.",
+            minociclina: "Activa según el antibiograma; combinación razonable junto al esquema basado en sulbactam.",
+            polimixina: "Activa y respaldada por guías como parte de un esquema combinado, pero su nefrotoxicidad exige reservarla y no usarla en monoterapia prolongada sin necesidad.",
+            cefiderocol: "Activo in vitro, pero un ensayo clínico mostró una señal de mayor mortalidad específicamente en el subgrupo de Acinetobacter: no es la primera elección aquí pese a la susceptibilidad.",
+            meropenem: "La carbapenemasa OXA-23-like inactiva a los carbapenémicos; el AST ya lo confirma resistente.",
+            mvb: "Vaborbactam no inhibe OXA-23-like: sigue sin haber actividad útil.",
+            irl: "Relebactam tampoco inhibe esta carbapenemasa de clase D.",
+            cza: "Avibactam no restaura de forma confiable la actividad frente a OXA-23-like.",
+            ceftolozano_tazobactam: "Es un antipseudomónico de reserva sin actividad frente a Acinetobacter.",
+            amikacina: "La corresistencia es frecuente en CRAB; el antibiograma ya lo reporta resistente.",
+            tmp_smx: "Sin actividad confiable frente a este aislamiento.",
+            ertapenem: "Nunca tuvo actividad frente a Acinetobacter, con o sin carbapenemasa.",
+            atmcza: "Diseñada para metalo-β-lactamasas con enzimas acompañantes; no es la respuesta a una carbapenemasa de clase D."
+          }
+        }),
+        items: [
+          { id: "foco", nombre: "Desbridamiento de la quemadura", mensaje: "Cirugía plástica realiza desbridamiento del tejido no viable: en Acinetobacter de herida, el control de foco pesa tanto como el antibiótico.", puntos: 15 },
+          { id: "cateter", nombre: "Retirar catéter central", mensaje: "Se retira y cultiva la punta del catéter central: fuente adicional plausible de bacteriemia en un paciente quemado con múltiples accesos.", puntos: 10 },
+          { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se ajusta sulbactam a dosis alta en infusión prolongada, considerando el mayor volumen de distribución típico del paciente quemado.", puntos: 15 },
+          { id: "aislamiento", nombre: "Precauciones de contacto reforzadas", mensaje: "Se refuerza el aislamiento de contacto: Acinetobacter baumannii sobrevive semanas en superficies secas y es causa frecuente de brotes en UCI.", puntos: 5 }
+        ],
+        explicacionFinal: "Acinetobacter baumannii con {GEN}, carbapenemasa OXA-23-like adquirida (clase D), distinta del gen intrínseco blaOXA-51-like y de OXA-48-like (Enterobacterales). mCIM positiva, APBA/EDTA negativas y PCR dirigida confirmaron el mecanismo cuando la inmunocromatografía comercial no lo cubría. Ampicilina-sulbactam a dosis alta fue la base terapéutica óptima; polimixina y minociclina son combinaciones razonables, y cefiderocol queda en segunda línea pese a su actividad in vitro por la señal de mortalidad observada en este género."
       }]
     };
 
@@ -2301,6 +2528,72 @@
           perdonada: { ojos: [[9, 6], [10, 6], [18, 6], [19, 6]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] },
           burlona: { ojos: [[10, 5], [17, 5], [18, 5]], boca: [[12, 10], [13, 10], [14, 9], [15, 8], [16, 7]] }
         }
+      },
+      pseudomonas: {
+        // Mismo contorno bacilar que E. coli, pero con un único flagelo polar
+        // (monótrico, no perítrico) y un nucleoide central en barra en vez de
+        // dos pares simétricos, para diferenciarlo al vuelo. El acento
+        // azul-verdoso evoca la piocianina, el pigmento que hace reconocible
+        // a P. aeruginosa incluso a simple vista en un cultivo.
+        matriz: [
+          "00000011111111111111111000000",
+          "00011122222222222222222111000",
+          "00112222222222222222222221100",
+          "01122222333322222223332222210",
+          "11222233222233222332223322211",
+          "12222332222223333222222332221",
+          "12222222222444444422222222221",
+          "12222222222444444422222222221",
+          "12222222222444444422222222221",
+          "11222233322222222223332222211",
+          "01122222222222222222222222110",
+          "00112222222222222222222221100",
+          "00011122222222222222222111000",
+          "00000011111111111111111000000"
+        ],
+        estilo: "monotrica",
+        colorAcento: "#39c9b0",
+        expresiones: {
+          sana: { ojos: [[10, 5], [18, 5]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] },
+          presionada: { ojos: [[10, 6], [18, 6]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
+          evolucionando: { ojos: [[9, 5], [10, 5], [18, 5], [19, 5]], boca: [[12, 9], [13, 8], [14, 9], [15, 8], [16, 9]] },
+          derrotada: { ojosX: [[9, 5], [10, 6], [9, 6], [10, 5], [18, 5], [19, 6], [18, 6], [19, 5]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
+          perdonada: { ojos: [[9, 6], [10, 6], [18, 6], [19, 6]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] },
+          burlona: { ojos: [[10, 5], [17, 5], [18, 5]], boca: [[12, 10], [13, 10], [14, 9], [15, 8], [16, 7]] }
+        }
+      },
+      acinetobacter: {
+        // Cocobacilo NO móvil, con frecuencia visto en pares bajo tinción
+        // Gram: el contorno se dibuja como dos lóbulos ovalados fusionados en
+        // vez de un bacilo alargado único. Al no incluir "cocobacilo" en la
+        // lista de estilos con flagelo de dibujarBacteria(), no recibe ningún
+        // flagelo, fiel a su inmovilidad.
+        matriz: [
+          "000000111110000011111000000",
+          "000011111111101111111110000",
+          "000112222222111222222211000",
+          "001122333332212233333221100",
+          "001122333332212233333221100",
+          "011222222222222222222222110",
+          "011224444444222444444422110",
+          "011224444444222444444422110",
+          "011224444444222444444422110",
+          "001122222222212222222221100",
+          "001122222222212222222221100",
+          "000112222222111222222211000",
+          "000011111111101111111110000",
+          "000000111110000011111000000"
+        ],
+        estilo: "cocobacilo",
+        colorAcento: "#9aa8bd",
+        expresiones: {
+          sana: { ojos: [[8, 3], [18, 3]], boca: [[11, 9], [12, 10], [13, 10], [14, 10], [15, 9]] },
+          presionada: { ojos: [[8, 4], [18, 4]], boca: [[11, 10], [12, 9], [13, 9], [14, 9], [15, 10]] },
+          evolucionando: { ojos: [[7, 3], [8, 3], [18, 3], [19, 3]], boca: [[11, 9], [12, 8], [13, 9], [14, 8], [15, 9]] },
+          derrotada: { ojosX: [[7, 3], [8, 4], [7, 4], [8, 3], [18, 3], [19, 4], [18, 4], [19, 3]], boca: [[11, 10], [12, 9], [13, 9], [14, 9], [15, 10]] },
+          perdonada: { ojos: [[7, 4], [8, 4], [18, 4], [19, 4]], boca: [[11, 9], [12, 10], [13, 10], [14, 10], [15, 9]] },
+          burlona: { ojos: [[8, 3], [16, 3], [17, 3]], boca: [[11, 10], [12, 10], [13, 9], [14, 8], [15, 7]] }
+        }
       }
     };
 
@@ -2345,7 +2638,9 @@
       proteus: { mecanismoIncorrecto: ["Mientras dudas, yo sigo subiendo por la vía urinaria."] },
       citrobacter: { mecanismoIncorrecto: ["Hoy soy sensible; mañana, quién sabe."] },
       serratia: { mecanismoIncorrecto: ["Elegante, resistente y con tiempo de sobra."] },
-      stenotrophomonas: { mecanismoIncorrecto: ["Ni siquiera necesito un plásmido: esto lo traigo de fábrica."] }
+      stenotrophomonas: { mecanismoIncorrecto: ["Ni siquiera necesito un plásmido: esto lo traigo de fábrica."] },
+      pseudomonas: { mecanismoIncorrecto: ["Tengo tres bombas de eflujo y ninguna es exclusiva. Elige mejor."] },
+      acinetobacter: { mecanismoIncorrecto: ["Sobrevivo semanas en una baranda seca. Tu hipótesis, unos segundos."] }
     };
 
     function elegirBurla(categoria, spriteId) {
@@ -2433,6 +2728,14 @@
           contexto.moveTo(origenX + ancho - escalaActual * 4, origenY + alto / 2 + escalaActual * 2);
           contexto.bezierCurveTo(origenX + ancho + 34, origenY + alto / 2 + 46, origenX + ancho + 60, origenY + alto / 2 + 10, origenX + ancho + 86, origenY + alto / 2 + 24);
         }
+      }
+      if (sprite.estilo === "monotrica") {
+        // Flagelación monótrica: UN solo flagelo grueso y largo en un único
+        // polo, sin nada en el otro extremo. Rasgo distintivo de Pseudomonas
+        // aeruginosa frente a la flagelación perítrica de Enterobacterales.
+        contexto.lineWidth = Math.max(3, escalaActual / 1.8);
+        contexto.moveTo(origenX + ancho - escalaActual * 5, origenY + alto / 2);
+        contexto.bezierCurveTo(origenX + ancho + 40, origenY + alto / 2 - 18, origenX + ancho + 70, origenY + alto / 2 + 22, origenX + ancho + 108, origenY + alto / 2 - 6);
       }
       contexto.stroke();
 
