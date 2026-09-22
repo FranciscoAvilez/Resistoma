@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Juego educativo sobre inferencia fenotípica de resistencia antimicrobiana en Enterobacterales.">
+  <meta name="description" content="Juego educativo sobre inferencia fenotípica de resistencia antimicrobiana en Enterobacterales y no fermentadores.">
   <title>Resistoma: fenotipo antes que fármaco</title>
   <style>
     :root {
@@ -161,7 +161,12 @@
       { id: "amikacina", nombre: "Amikacina", presion: 8, toxicidad: 18, espectro: "Aminoglucósido. Buena actividad Gram negativa; nefro/ototoxicidad limita la monoterapia." },
       { id: "fosfomicina", nombre: "Fosfomicina oral", presion: 3, toxicidad: 1, espectro: "Concentración útil solo en orina. No sirve para bacteriemia ni infección profunda." },
       { id: "nitrofurantoina", nombre: "Nitrofurantoína", presion: 2, toxicidad: 1, espectro: "Solo cistitis: no alcanza parénquima renal ni concentración sérica útil." },
-      { id: "polimixina", nombre: "Polimixina B / colistina", presion: 20, toxicidad: 28, espectro: "Última línea frente a Gram negativos extremadamente resistentes. Nefro/neurotoxicidad alta." }
+      { id: "polimixina", nombre: "Polimixina B / colistina", presion: 20, toxicidad: 28, espectro: "Última línea frente a Gram negativos extremadamente resistentes. Nefro/neurotoxicidad alta." },
+      { id: "tmp_smx", nombre: "Trimetoprim-sulfametoxazol", presion: 6, toxicidad: 4, espectro: "Primera línea frente a S. maltophilia. Vigilar mielosupresión e hiperpotasemia; ajustar a función renal." },
+      { id: "levofloxacino", nombre: "Levofloxacino", presion: 10, toxicidad: 5, espectro: "Fluoroquinolona respiratoria. Alternativa razonable cuando el TMP-SMX no es viable." },
+      { id: "minociclina", nombre: "Minociclina", presion: 9, toxicidad: 3, espectro: "Tetraciclina con actividad frente a no fermentadores multirresistentes (Stenotrophomonas, Acinetobacter)." },
+      { id: "ampicilina_sulbactam", nombre: "Ampicilina-sulbactam", presion: 12, toxicidad: 1, espectro: "El sulbactam, no la ampicilina, aporta actividad intrínseca frente a Acinetobacter." },
+      { id: "ceftolozano_tazobactam", nombre: "Ceftolozano-tazobactam", presion: 24, toxicidad: 2, espectro: "Antipseudomónico de reserva. Sin actividad frente a carbapenemasas ni frente a Acinetobacter/Stenotrophomonas." }
     ];
 
     // Descripción genérica por fármaco, independiente del caso: se usa como
@@ -230,7 +235,8 @@
       MBL: "Metalo-β-lactamasa clase B dependiente de zinc; NO inhibida por avibactam/vaborbactam/relebactam.",
       OXA48: "Carbapenemasa de serina clase D; inhibida por avibactam, no por vaborbactam/relebactam.",
       PORINAS: "Pérdida de porinas (± BLEE/AmpC) que reduce la entrada de carbapenémicos sin ser una carbapenemasa.",
-      EFLUJO: "Bombas de expulsión activa que sacan el fármaco antes de que actúe; afecta varias clases a la vez."
+      EFLUJO: "Bombas de expulsión activa que sacan el fármaco antes de que actúe; afecta varias clases a la vez.",
+      MBL_INTRINSECA: "Enzimas cromosómicas de fábrica (no adquiridas): inactivan casi todos los betalactámicos, incluidos carbapenémicos."
     };
 
     function crearPruebasFenotipoBasal(detalle) {
@@ -364,7 +370,7 @@
     }, {
       id: "klebsiella_basal_bacteriemia",
       capitulo: "CAPÍTULO 1 · FENOTIPO BASAL",
-      nivelResistencia: "SUSCEPTIBLE CON RESISTENCIA INTRÍNSECA",
+      nivelResistencia: "SUSCEPTIBLE · R. INTRÍNSECA",
       dificultad: { amenazaBase: 6, creditosLaboratorio: 4, gastoLaboratorioIdeal: 0 },
       spriteId: "klebsiella",
       patronBase: "basal",
@@ -433,7 +439,7 @@
     }, {
       id: "proteus_pielonefritis_basal",
       capitulo: "CAPÍTULO 1 · FENOTIPO BASAL",
-      nivelResistencia: "SUSCEPTIBLE CON RESISTENCIAS INTRÍNSECAS",
+      nivelResistencia: "SUSCEPTIBLE · R. INTRÍNSECAS",
       dificultad: { amenazaBase: 8, creditosLaboratorio: 5, gastoLaboratorioIdeal: 0 },
       spriteId: "proteus",
       patronBase: "basal",
@@ -518,7 +524,7 @@
     const ENCUENTROS_ARTILLERIA = [{
       id: "proteus_ampc_plasmidica",
       capitulo: "CAPÍTULO 3 · ARTILLERÍA PESADA",
-      nivelResistencia: "MDR · RESISTENCIA TRANSFERIBLE",
+      nivelResistencia: "MDR · TRANSFERIBLE",
       dificultad: { amenazaBase: 17, creditosLaboratorio: 6, gastoLaboratorioIdeal: 1 },
       spriteId: "proteus",
       patronBase: "ampc_plasmidica",
@@ -575,13 +581,14 @@
       terapias: crearTerapiasAvanzadas({
         optima: ["cefepima"],
         razonable: ["ertapenem", "meropenem"],
-        inactiva: ["ampicilina", "cefazolina", "cefuroxima", "ceftriaxona", "ceftazidima", "nitrofurantoina", "polimixina"],
+        inactiva: ["ampicilina", "cefazolina", "cefuroxima", "ceftriaxona", "ceftazidima", "nitrofurantoina", "polimixina", "levofloxacino"],
         toxicidad: ["amikacina"],
         mensajes: {
           cefepima: "Cefepima susceptible resiste mejor la hidrólisis por AmpC y ahorra carbapenémicos; exige exposición PK/PD adecuada.",
           ceftriaxona: "La tercera generación es resistente. La obstrucción amplifica el fracaso.",
           meropenem: "Es activo, pero cefepima susceptible y drenaje permiten reservar el carbapenémico.",
-          nitrofurantoina: "Proteus es resistente y el fármaco no alcanza riñón ni sangre."
+          nitrofurantoina: "Proteus es resistente y el fármaco no alcanza riñón ni sangre.",
+          levofloxacino: "El antibiograma ya muestra ciprofloxacino resistente; la resistencia a fluoroquinolonas suele ser de clase."
         },
         ajustes: {
           piptazo: { clase: "trampa", dano: 8, rebote: 14, mensaje: "Tazobactam protege de forma insuficiente frente a AmpC en esta infección invasiva." }
@@ -654,12 +661,14 @@
       terapias: crearTerapiasAvanzadas({
         optima: ["cefepima"],
         razonable: ["ertapenem", "meropenem"],
-        inactiva: ["ampicilina", "cefazolina", "cefuroxima", "fosfomicina", "nitrofurantoina"],
+        inactiva: ["ampicilina", "cefazolina", "cefuroxima", "fosfomicina", "nitrofurantoina", "tmp_smx", "levofloxacino"],
         toxicidad: ["amikacina", "polimixina"],
         mensajes: {
           cefepima: "Cefepima es débil inductora y estable frente a AmpC; con CIM 1 y exposición optimizada es la opción dirigida.",
           ceftriaxona: "Aunque hoy aparece susceptible, no se sugiere para esta infección invasiva por una especie de riesgo moderado.",
-          meropenem: "Es activo, pero el catéter retirado y cefepima susceptible permiten ahorrar carbapenémicos."
+          meropenem: "Es activo, pero el catéter retirado y cefepima susceptible permiten ahorrar carbapenémicos.",
+          tmp_smx: "El antibiograma ya lo muestra resistente: no es una alternativa aquí.",
+          levofloxacino: "El ciprofloxacino intermedio ya anticipaba una fluoroquinolona poco confiable como monoterapia dirigida."
         },
         ajustes: {
           ceftriaxona: { clase: "trampa", dano: 10, rebote: 27, induceAmpC: true, mensaje: "Ceftriaxona selecciona una subpoblación desreprimida: la respuesta inicial se convierte en rebote." },
@@ -678,7 +687,7 @@
     }, {
       id: "serratia_eflujo",
       capitulo: "CAPÍTULO 3 · ARTILLERÍA PESADA",
-      nivelResistencia: "MDR · INFERENCIA POR EXCLUSIÓN",
+      nivelResistencia: "MDR · POR EXCLUSIÓN",
       dificultad: { amenazaBase: 23, creditosLaboratorio: 6, gastoLaboratorioIdeal: 2 },
       spriteId: "serratia",
       patronBase: "eflujo",
@@ -735,13 +744,14 @@
       terapias: crearTerapiasAvanzadas({
         optima: ["cefepima"],
         razonable: ["ceftriaxona", "meropenem"],
-        inactiva: ["ampicilina", "cefazolina", "cefuroxima", "nitrofurantoina", "fosfomicina", "polimixina"],
+        inactiva: ["ampicilina", "cefazolina", "cefuroxima", "nitrofurantoina", "fosfomicina", "polimixina", "levofloxacino"],
         toxicidad: ["amikacina"],
         mensajes: {
           cefepima: "En una infección de alta carga y control de foco limitado, cefepima susceptible es una opción prudente y conserva carbapenémicos.",
           ceftriaxona: "Serratia suele tener bajo riesgo de desrepresión; es activa, pero en ventriculitis de alta carga el caso favorece cefepima.",
           meropenem: "Es activo y razonable, aunque no hace falta asumir carbapenemasa ni saltar a reserva si cefepima cumple el objetivo.",
-          cza: "No hay carbapenemasa o betalactamasa que justifique añadir avibactam."
+          cza: "No hay carbapenemasa o betalactamasa que justifique añadir avibactam.",
+          levofloxacino: "El antibiograma ya muestra ciprofloxacino resistente por el mismo sistema de eflujo multisustrato."
         }
       }),
       itemsRequeridosMercy: ["foco", "cateter", "pkpd"],
@@ -1477,7 +1487,133 @@
           ],
           explicacionFinal: "Serratia marcescens con {GEN}: AmpC cromosómica desreprimida. La especie, la cefoxitina resistente y el viraje de ceftriaxona tras exposición explican el fenotipo. El plan óptimo fue desbridamiento quirúrgico de la herida más cefepima susceptible con exposición PK/PD adecuada; carbapenémicos y nuevos inhibidores eran activos, pero innecesarios."
         }]
-      }, ...ENCUENTROS_ARTILLERIA]
+      }, ...ENCUENTROS_ARTILLERIA, {
+        // Primer no fermentador de la campaña. A propósito rompe reglas que
+        // el resto del juego enseñó: aquí NO hay cefoxitina en el panel (no
+        // es una prueba de rutina fuera de Enterobacterales), mCIM no está
+        // validada por el CLSI para esta especie, y "resistente a
+        // carbapenémicos" no significa carbapenemasa adquirida.
+        id: "stenotrophomonas_intrinseca",
+        capitulo: "CAPÍTULO 5 · NO FERMENTADORES",
+        nivelResistencia: "XDR INTRÍNSECO",
+        dificultad: { amenazaBase: 16, creditosLaboratorio: 5, gastoLaboratorioIdeal: 1 },
+        spriteId: "stenotrophomonas",
+        patronBase: "mbl",
+        muestra: "LAVADO BRONCOALVEOLAR",
+        microorganismo: "Stenotrophomonas maltophilia",
+        mecanismoReal: "MBL_INTRINSECA",
+        nombreMecanismo: "Resistencia intrínseca cromosómica (L1 + L2)",
+        variantesGeneticas: ["L1 (MBL cromosómica intrínseca)", "L2 (cefalosporinasa cromosómica tipo AmpC)", "SmeDEF (eflujo intrínseco adicional)"],
+        introduccion: [
+          "UNIDAD DE ONCOLOGÍA // UN BACILO QUE NO SE PARECE A LOS DEMÁS",
+          "Paciente de 14 años, neutropénico en resolución, con neumonía asociada a ventilador por Stenotrophomonas maltophilia.",
+          "El antibiograma ya está disponible. Esto no es un Enterobacterales: varias reglas que ya dominas no aplican igual aquí.",
+          "Antes de pedir una prueba más, pregúntate si la especie ya te dio la respuesta."
+        ],
+        pistaDiagnostica: "S. maltophilia porta de forma intrínseca y cromosómica dos enzimas, L1 (metalo-β-lactamasa dependiente de zinc) y L2 (cefalosporinasa), que inactivan de fábrica prácticamente todos los betalactámicos, incluidos los carbapenémicos. No es una carbapenemasa adquirida ni transferible: es un rasgo esperado de la especie.",
+        pistaHipotesisIncorrecta: "Resistencia a carbapenémicos no siempre significa una carbapenemasa adquirida como KPC, una MBL plasmídica u OXA-48-like. Con esta especie, la resistencia intrínseca cromosómica explica el patrón completo sin necesidad de un gen transferible.",
+        frasesAtaque: [
+          "MI RESISTENCIA NO LA PEDÍ PRESTADA A NADIE.",
+          "CADA CARBAPENÉMICO QUE PRUEBAS ES TIEMPO QUE EL PULMÓN NO TIENE.",
+          "RECONOCE LA ESPECIE Y YA SABES CONTRA QUÉ LUCHAS."
+        ],
+        paciente: {
+          edad: "14 años",
+          sindrome: "Neumonía asociada a ventilador en paciente oncológico neutropénico",
+          estado: "Estable con soporte ventilatorio; neutropenia en resolución",
+          foco: "Pulmonar; broncoscopia sin colección drenable",
+          funcionRenal: "TFGe conservada"
+        },
+        antibiograma: [
+          { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Resistencia intrínseca" },
+          { farmaco: "Ceftriaxona", cim: ">32", clsi: "R", eucast: "R", nota: "Resistencia intrínseca" },
+          { farmaco: "Ceftazidima", cim: "32", clsi: "R", eucast: "R", nota: "Actividad no confiable" },
+          { farmaco: "Cefepima", cim: "16", clsi: "R", eucast: "R", nota: "Actividad no confiable" },
+          { farmaco: "Piperacilina-tazobactam", cim: ">64/4", clsi: "R", eucast: "R", nota: "Resistencia intrínseca" },
+          { farmaco: "Ertapenem", cim: ">4", clsi: "R", eucast: "R", nota: "Intrínseca, no CRE adquirida" },
+          { farmaco: "Meropenem", cim: ">16", clsi: "R", eucast: "R", nota: "Intrínseca, no CRE adquirida" },
+          { farmaco: "Ceftazidima-avibactam", cim: ">16/4", clsi: "R", eucast: "R", nota: "Avibactam no inhibe la MBL L1" },
+          { farmaco: "Aztreonam", cim: "16", clsi: "R", eucast: "R", nota: "Hidrolizado por L2" },
+          { farmaco: "Amikacina", cim: ">64", clsi: "R", eucast: "R", nota: "Actividad no confiable" },
+          { farmaco: "Polimixina B/colistina", cim: "8", clsi: "—", eucast: "R", nota: "Resistencia intrínseca frecuente" },
+          { farmaco: "TMP-SMX", cim: "≤2/38", clsi: "S", eucast: "S", nota: "Primera línea" },
+          { farmaco: "Levofloxacino", cim: "1", clsi: "S", eucast: "S", nota: "Alternativa razonable" },
+          { farmaco: "Minociclina", cim: "1", clsi: "S", eucast: "S", nota: "Alternativa razonable" },
+          { farmaco: "Cefiderocol", cim: "1", clsi: "S", eucast: "S", nota: "Activo; reserva" }
+        ],
+        pruebas: [
+          {
+            id: "doble_disco",
+            nombre: "Sinergia de doble disco",
+            costo: 1,
+            resultado: "NO INTERPRETABLE en este género.",
+            interpretacion: "La sinergia con clavulanato no está validada como prueba de rutina en bacilos no fermentadores."
+          },
+          {
+            id: "mcim_ecim",
+            nombre: "mCIM + eCIM",
+            costo: 2,
+            resultado: "NO VALIDADA para S. maltophilia según CLSI.",
+            interpretacion: "El CLSI limita esta prueba a Enterobacterales (y de forma extendida a Pseudomonas/Acinetobacter). Pedirla aquí no aporta valor."
+          },
+          {
+            id: "apba_edta",
+            nombre: "Inhibición APBA + EDTA",
+            costo: 1,
+            resultado: "APBA NEGATIVA / EDTA POSITIVA.",
+            interpretacion: "La inhibición por EDTA es compatible con una metalo-enzima dependiente de zinc (L1), aunque tampoco es una prueba estandarizada para esta especie."
+          },
+          {
+            id: "inmunocromatografia",
+            nombre: "Inmunocromatografía CRE",
+            costo: 2,
+            resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.",
+            interpretacion: "Resultado esperado: el panel no incluye blaL1 ni blaL2, los genes responsables aquí."
+          },
+          {
+            id: "pcr",
+            nombre: "PCR de carbapenemasas",
+            costo: 3,
+            resultado: "blaKPC, blaNDM, blaVIM, blaIMP y blaOXA-48-like: NO DETECTADOS.",
+            interpretacion: "Una PCR dirigida a genes adquiridos no tiene blanco en una resistencia intrínseca cromosómica: solicitud de nulo rendimiento."
+          }
+        ],
+        mecanismosSeleccionables: [
+          { id: "MBL_INTRINSECA", nombre: "MBL cromosómica intrínseca (L1) + L2 tipo AmpC" },
+          { id: "MBL", nombre: "NDM/VIM/IMP adquirida · clase B" },
+          { id: "KPC", nombre: "KPC · clase A" },
+          { id: "OXA48", nombre: "OXA-48-like · clase D" },
+          { id: "BLEE", nombre: "BLEE (CTX-M/SHV/TEM)" },
+          { id: "EFLUJO", nombre: "Sobreexpresión de bombas de eflujo" }
+        ],
+        terapias: crearTerapiasAvanzadas({
+          optima: ["tmp_smx"],
+          razonable: ["levofloxacino", "minociclina", "cefiderocol"],
+          foco: ["fosfomicina", "nitrofurantoina"],
+          inactiva: ["ampicilina", "cefazolina", "cefuroxima", "ceftriaxona", "ceftazidima", "cefepima", "piptazo", "ertapenem", "meropenem", "cza", "mvb", "irl", "atmcza", "amikacina", "polimixina", "ampicilina_sulbactam", "ceftolozano_tazobactam"],
+          mensajes: {
+            tmp_smx: "Primera línea frente a S. maltophilia susceptible: cubre el fenotipo intrínseco sin necesidad de espectro adicional.",
+            meropenem: "Resistencia intrínseca por L1/L2: no hay carbapenemasa adquirida que reservar aquí, simplemente no funciona.",
+            ertapenem: "Igual que meropenem: la resistencia es de fábrica, no depende de un gen transferible que 'sortear'.",
+            cza: "Avibactam no inhibe la metalo-β-lactamasa L1; el resultado en el antibiograma ya lo advertía.",
+            atmcza: "Diseñada para MBL adquirida con betalactamasas de serina acompañantes: no resuelve una L1/L2 intrínseca.",
+            ceftolozano_tazobactam: "Es un antipseudomónico de reserva; no tiene actividad confiable frente a S. maltophilia.",
+            ampicilina_sulbactam: "El sulbactam ayuda frente a Acinetobacter, no frente a esta especie.",
+            levofloxacino: "Alternativa razonable si TMP-SMX no es viable, con vigilancia de la CIM real del aislamiento.",
+            minociclina: "Alternativa razonable, útil especialmente si hay intolerancia a sulfas.",
+            cefiderocol: "Activo y aprobado para esta especie, pero de reserva: TMP-SMX cubre el objetivo con menos espectro.",
+            polimixina: "La resistencia intrínseca a polimixinas es frecuente en esta especie: no es un fallback confiable.",
+            amikacina: "Actividad poco confiable frente a S. maltophilia; no es la opción dirigida."
+          }
+        }),
+        items: [
+          { id: "foco", nombre: "Analizar el foco pulmonar", mensaje: "La broncoscopia no muestra colección drenable ni cavitación. No existe un procedimiento que sustituya al antibiótico dirigido.", puntos: 5 },
+          { id: "cateter", nombre: "Retirar catéter", mensaje: "No hay un catéter implicado en este foco pulmonar. Retirarlo por rutina sería una intervención sin blanco.", puntos: -3 },
+          { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se ajusta trimetoprim-sulfametoxazol a peso y función renal, vigilando mielosupresión adicional en un paciente con neutropenia reciente.", puntos: 15 },
+          { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local; S. maltophilia puede colonizar equipo respiratorio compartido.", puntos: 3 }
+        ],
+        explicacionFinal: "Stenotrophomonas maltophilia con resistencia intrínseca cromosómica {GEN}: L1 y L2 explican la resistencia a prácticamente todos los betalactámicos, incluidos los carbapenémicos, sin necesidad de un gen adquirido. Pedir mCIM, inmunocromatografía o PCR de carbapenemasas aquí fue de bajo o nulo rendimiento: el fenotipo ya era predecible desde la identificación de la especie. TMP-SMX fue el esquema dirigido de primera línea; levofloxacino, minociclina y cefiderocol son alternativas razonables."
+      }]
     };
 
     // Índice independiente del motor: permite añadir más casos al arreglo sin
@@ -2112,6 +2248,38 @@
           perdonada: { ojos: [[9, 6], [10, 6], [20, 6], [21, 6]], boca: [[13, 9], [14, 10], [15, 10], [16, 10], [17, 9]] },
           burlona: { ojos: [[10, 5], [19, 5], [20, 5]], boca: [[13, 10], [14, 10], [15, 9], [16, 8], [17, 7]] }
         }
+      },
+      stenotrophomonas: {
+        // Primer bacilo no fermentador del juego: mismo perfil de bacilo que
+        // E. coli, pero con flagelos polares en penacho (lofotrica) en vez de
+        // perítricos, y un tono verde-amarillento (pigmentación descrita en
+        // algunas cepas), para distinguirlo de entrada de los Enterobacterales.
+        matriz: [
+          "00000011111111111111111000000",
+          "00011122222222222222222111000",
+          "00112222222222222222222221100",
+          "01122222333322222223332222210",
+          "11222233222233222332223322211",
+          "12222332222223333222222332221",
+          "12222222444444444444222222221",
+          "12222222422442224422422222221",
+          "12222222244224422244222222221",
+          "11222233322222222223332222211",
+          "01122222222222222222222222110",
+          "00112222222222222222222221100",
+          "00011122222222222222222111000",
+          "00000011111111111111111000000"
+        ],
+        estilo: "lofotrica",
+        colorAcento: "#c4e86e",
+        expresiones: {
+          sana: { ojos: [[10, 5], [18, 5]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] },
+          presionada: { ojos: [[10, 6], [18, 6]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
+          evolucionando: { ojos: [[9, 5], [10, 5], [18, 5], [19, 5]], boca: [[12, 9], [13, 8], [14, 9], [15, 8], [16, 9]] },
+          derrotada: { ojosX: [[9, 5], [10, 6], [9, 6], [10, 5], [18, 5], [19, 6], [18, 6], [19, 5]], boca: [[12, 10], [13, 9], [14, 9], [15, 9], [16, 10]] },
+          perdonada: { ojos: [[9, 6], [10, 6], [18, 6], [19, 6]], boca: [[12, 9], [13, 10], [14, 10], [15, 10], [16, 9]] },
+          burlona: { ojos: [[10, 5], [17, 5], [18, 5]], boca: [[12, 10], [13, 10], [14, 9], [15, 8], [16, 7]] }
+        }
       }
     };
 
@@ -2155,7 +2323,8 @@
       enterobacter: { mecanismoIncorrecto: ["¿Ya viste qué especie soy? Eso ya era una pista."] },
       proteus: { mecanismoIncorrecto: ["Mientras dudas, yo sigo subiendo por la vía urinaria."] },
       citrobacter: { mecanismoIncorrecto: ["Hoy soy sensible; mañana, quién sabe."] },
-      serratia: { mecanismoIncorrecto: ["Elegante, resistente y con tiempo de sobra."] }
+      serratia: { mecanismoIncorrecto: ["Elegante, resistente y con tiempo de sobra."] },
+      stenotrophomonas: { mecanismoIncorrecto: ["Ni siquiera necesito un plásmido: esto lo traigo de fábrica."] }
     };
 
     function elegirBurla(categoria, spriteId) {
@@ -2219,7 +2388,7 @@
       contexto.bezierCurveTo(origenX - 25, origenY - 24, origenX - 48, origenY + alto + 20, origenX - 76, origenY + alto + 4);
       contexto.moveTo(origenX + ancho - escalaActual * 3, origenY + escalaActual * 2);
       contexto.bezierCurveTo(origenX + ancho + 32, origenY - 22, origenX + ancho + 50, origenY + alto, origenX + ancho + 76, origenY + alto - 26);
-      if (["peritrica", "hiperflagelada", "serratia"].includes(sprite.estilo)) {
+      if (["peritrica", "hiperflagelada", "serratia", "lofotrica"].includes(sprite.estilo)) {
         contexto.moveTo(origenX + escalaActual * 7, origenY + escalaActual);
         contexto.bezierCurveTo(origenX, origenY - 34, origenX - 35, origenY - 40, origenX - 54, origenY - 60);
         contexto.moveTo(origenX + ancho - escalaActual * 7, origenY + alto - escalaActual);
@@ -2233,6 +2402,15 @@
         if (sprite.estilo === "serratia") {
           contexto.moveTo(origenX + ancho - escalaActual * 4, origenY + alto / 2);
           contexto.bezierCurveTo(origenX + ancho + 30, origenY + alto / 2 - 34, origenX + ancho + 58, origenY + alto / 2 + 32, origenX + ancho + 82, origenY + alto / 2 - 5);
+        }
+        if (sprite.estilo === "lofotrica") {
+          // Flagelación polar en penacho: varios flagelos concentrados en UN
+          // solo polo (a diferencia de perítrica, que los reparte alrededor),
+          // fiel a géneros como Stenotrophomonas.
+          contexto.moveTo(origenX + ancho - escalaActual * 4, origenY + alto / 2 - escalaActual * 2);
+          contexto.bezierCurveTo(origenX + ancho + 34, origenY + alto / 2 - 46, origenX + ancho + 60, origenY + alto / 2 - 10, origenX + ancho + 86, origenY + alto / 2 - 24);
+          contexto.moveTo(origenX + ancho - escalaActual * 4, origenY + alto / 2 + escalaActual * 2);
+          contexto.bezierCurveTo(origenX + ancho + 34, origenY + alto / 2 + 46, origenX + ancho + 60, origenY + alto / 2 + 10, origenX + ancho + 86, origenY + alto / 2 + 24);
         }
       }
       contexto.stroke();
@@ -3059,6 +3237,25 @@
         }
     }
 
+    // Stenotrophomonas: propulsión polar en penacho. En vez de rodear al
+    // corazón, empuja un haz apretado desde un único punto de la orilla,
+    // como su flagelación lofótrica.
+    function generarFirmaStenotrophomonas(nivel) {
+        const desdeIzquierda = Math.random() < 0.5;
+        const yBase = ZONA_BALAS.y + ZONA_BALAS.alto / 2;
+        const velocidad = (140 + nivel * 11) * factorMovimiento();
+        for (let i = -1; i <= 1; i += 1) {
+          crearBala(
+            desdeIzquierda ? ZONA_BALAS.x + 4 : ZONA_BALAS.x + ZONA_BALAS.ancho - 4,
+            yBase + i * 16,
+            desdeIzquierda ? velocidad : -velocidad,
+            i * 22,
+            6, "flagelo", 4 + Math.floor(nivel / 3),
+            { giro: (desdeIzquierda ? 1 : -1) * 1.6 }
+          );
+        }
+    }
+
     function generarFirmaEspecie() {
       const nivel = calcularNivelAmenaza();
       const spriteId = CONTENIDO_CLINICO.encuentro.spriteId;
@@ -3068,6 +3265,7 @@
       else if (spriteId === "citrobacter") generarFirmaCitrobacter(nivel);
       else if (spriteId === "serratia") generarFirmaSerratia(nivel);
       else if (spriteId === "enterobacter") generarFirmaEnterobacter(nivel);
+      else if (spriteId === "stenotrophomonas") generarFirmaStenotrophomonas(nivel);
     }
 
     // El tutorial usa amenazas microbiológicas simples. La especie cambia la
@@ -3606,29 +3804,43 @@
       dibujarTexto("CAMPAÑA CLÍNICA · DEL FENOTIPO BASAL A LA RESISTENCIA", 42, 65, 12, COLOR.medio);
       dibujarTexto("Cada encuentro resuelto desbloquea el siguiente. Tu progreso queda guardado en este navegador.", 42, 91, 10, COLOR.principal);
 
+      // Con tarjetas más angostas, el nombre completo del organismo ya no
+      // cabe en una línea: se abrevia el género (Escherichia coli -> E.
+      // coli). Los nombres ya combinados ("E. coli / K. pneumoniae") se
+      // dejan como están.
+      const abreviarOrganismo = function (nombre) {
+        if (nombre.indexOf(".") >= 0 || nombre.indexOf("/") >= 0) return nombre;
+        const partes = nombre.split(" ");
+        return partes.length < 2 ? nombre : partes[0][0] + ". " + partes.slice(1).join(" ");
+      };
+      // 4 columnas en vez de 3: deja lugar a más encuentros (capítulos
+      // nuevos) sin que una cuarta fila se salga del lienzo de 600px.
+      const columnas = 4;
+      const anchoTarjeta = 208;
+      const altoTarjeta = 98;
       CONTENIDO_CLINICO.encuentros.forEach(function (encuentro, indice) {
         const desbloqueado = indice <= progresoCampania.maximoDesbloqueado;
-        const columna = indice % 3;
-        const fila = Math.floor(indice / 3);
-        const x = 42 + columna * 300;
+        const columna = indice % columnas;
+        const fila = Math.floor(indice / columnas);
+        const x = 42 + columna * 228;
         const y = 120 + fila * 139;
         const mejor = progresoCampania.mejoresPuntajes[encuentro.id];
         const etiqueta = desbloqueado
-          ? ((indice + 1) + " · " + encuentro.microorganismo + "\n" + encuentro.nivelResistencia)
-          : ((indice + 1) + " · ENCUENTRO BLOQUEADO\nRESUELVE EL CASO ANTERIOR");
+          ? ((indice + 1) + " · " + abreviarOrganismo(encuentro.microorganismo) + "\n" + encuentro.nivelResistencia)
+          : ((indice + 1) + " · BLOQUEADO\nRESUELVE EL ANTERIOR");
         registrarBoton(
           x,
           y,
-          272,
-          98,
+          anchoTarjeta,
+          altoTarjeta,
           etiqueta,
           function () { seleccionarEncuentroCampania(indice); },
           estadoJuego.seleccion === indice,
           !desbloqueado
         );
         if (desbloqueado) {
-          dibujarTexto(encuentro.capitulo, x + 14, y + 56, 9, COLOR.tenue);
-          dibujarTexto(mejor ? "MEJOR " + mejor + "/100" : "NUEVO CASO", x + 14, y + 76, 10, mejor ? COLOR.exito : COLOR.medio);
+          dibujarTexto(encuentro.capitulo, x + 12, y + 56, 8, COLOR.tenue);
+          dibujarTexto(mejor ? "MEJOR " + mejor + "/100" : "NUEVO CASO", x + 12, y + 76, 9, mejor ? COLOR.exito : COLOR.medio);
         }
       });
 
@@ -3647,7 +3859,7 @@
         estadoJuego.seleccion === indiceBotonReinicio
       );
 
-      dibujarTexto("9 encuentros · susceptible → MDR → CRE/XDR · el jefe cambia de forma al reintentar", 42, 548, 10, COLOR.principal);
+      dibujarTexto(CONTENIDO_CLINICO.encuentros.length + " encuentros · susceptible → MDR → CRE/XDR → no fermentadores", 42, 548, 10, COLOR.principal);
       dibujarTexto("CLIC: seleccionar · ENTER: iniciar · la dificultad clínica y motora aumentan por separado", 42, 570, 10, COLOR.medio);
     }
 
@@ -4362,7 +4574,7 @@
         : (quedanEncuentros ? function () { iniciarEncuentro(resumen.indiceEncuentro); } : iniciarJuego);
       registrarBoton(48, 512, 270, 44, etiquetaContinuar, accionContinuar, true);
       registrarBoton(338, 512, 210, 44, "MAPA DE CAMPAÑA", mostrarCampania, false);
-      dibujarTexto("9 encuentros · susceptible → MDR → CRE/XDR · jefe con 4 formas", 914, 540, 10, COLOR.medio, "right");
+      dibujarTexto(CONTENIDO_CLINICO.encuentros.length + " encuentros · susceptible → MDR → CRE/XDR → no fermentadores", 914, 540, 10, COLOR.medio, "right");
     }
 
     function obtenerNombreTratamiento() {
