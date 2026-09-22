@@ -4224,6 +4224,17 @@
         dibujarTexto(textoSello, -54, -7, 11, colorPanel);
         contexto.restore();
 
+        // Todo el panel abre el caso, no solo el botón pequeño: en un
+        // Artifact angosto (celular, panel lateral) la esquina del botón
+        // podía quedar fuera de la vista o demasiado cerca de las pestañas
+        // de al lado, y el clic terminaba cayendo sobre otra pestaña en vez
+        // de abrir el expediente. Un área de clic del tamaño de todo el
+        // panel es imposible de fallar. El botón visible sigue ahí como
+        // llamado a la acción, pero ya no es el único punto donde funciona.
+        botonesActivos.push({
+          x: panelX, y: panelY, ancho: panelW, alto: panelH,
+          accion: function () { seleccionarEncuentroCampania(indiceExpediente); }
+        });
         registrarBoton(
           panelX + panelW - 246, panelY + panelH - 58, 222, 42,
           "ABRIR EXPEDIENTE →",
@@ -4248,7 +4259,7 @@
 
       const indiceBotonPractica = totalEncuentros;
       const indiceBotonReinicio = totalEncuentros + 1;
-      const filaBotonesY = panelY + panelH + 12;
+      const filaBotonesY = panelY + panelH + 20;
       registrarBoton(
         42, filaBotonesY, 636, 34,
         "MICROLEARNING · PRÁCTICA RÁPIDA (3-5 MIN) · CASO ALEATORIO YA DESBLOQUEADO",
