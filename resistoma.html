@@ -1228,93 +1228,10 @@
         capitulo: "CAPÍTULO 2 · RESISTENCIA ADQUIRIDA",
         nivelResistencia: "MDR · FENOTIPO DINÁMICO",
         dificultad: { amenazaBase: 14, creditosLaboratorio: 6, gastoLaboratorioIdeal: 2 },
-        spriteId: "enterobacter",
         patronBase: "ampc",
-        muestra: "HEMOCULTIVO",
-        microorganismo: "Enterobacter cloacae complex",
-        mecanismoReal: "AmpC_desreprimida",
-        nombreMecanismo: "AmpC cromosómica desreprimida",
-        variantesGeneticas: ["ampD alterado", "ampR constitutivo", "desrepresión estable de ampC"],
-        introduccion: [
-          "SEGUNDO HEMOCULTIVO // LA ESPECIE TAMBIÉN ES UNA PRUEBA",
-          "Paciente de 6 años con bacteriemia tras apendicitis perforada. Recibió ceftriaxona por 48 horas y persiste una colección intraabdominal residual.",
-          "El aislamiento inicial parece susceptible a ceftriaxona y cefepima. ¿Es estable ese resultado bajo tratamiento?",
-          "En este encuentro debes leer especie, foco y cambio temporal del fenotipo."
-        ],
-        pistaDiagnostica: "E. cloacae complex tiene riesgo moderado de expresión clínicamente significativa de AmpC inducible. El viraje tras ceftriaxona y el apoyo con APBA encajan con selección de una subpoblación desreprimida.",
-        pistaHipotesisIncorrecta: "Relaciona la especie con la exposición a ceftriaxona y el cambio entre el AST inicial y el de control. APBA apoya AmpC, pero no distingue por sí sola origen cromosómico de plasmídico.",
-        frasesAtaque: [
-          "UNA CIM FAVORABLE PUEDE CAMBIAR DURANTE EL TRATAMIENTO.",
-          "SIN CONTROL DE FOCO, LA BACTERIA SIGUE ATACANDO.",
-          "LA PRESIÓN ANTIBIÓTICA PUEDE CAMBIAR EL FENOTIPO."
-        ],
-        paciente: {
-          edad: "6 años",
-          sindrome: "Bacteriemia posapendicitis perforada",
-          estado: "Estable, pero con fiebre persistente",
-          foco: "Colección residual intraabdominal de 3.5 cm",
-          funcionRenal: "TFGe conservada"
-        },
-        antibiograma: [
-          { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Resistencia intrínseca esperada" },
-          { farmaco: "Cefazolina", cim: ">16", clsi: "R", eucast: "R", nota: "Hidrólisis por AmpC basal" },
-          { farmaco: "Cefuroxima", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
-          { farmaco: "Cefoxitina", cim: ">16", clsi: "R", eucast: "—", nota: "Pista AmpC; no confirmatoria" },
-          { farmaco: "Ceftriaxona · inicial", cim: "1", clsi: "S", eucast: "S", nota: "Trampa: resultado inestable" },
-          { farmaco: "Ceftazidima · inicial", cim: "2", clsi: "S", eucast: "S", nota: "Puede virar durante terapia" },
-          { farmaco: "Cefepima", cim: "1", clsi: "S", eucast: "S", nota: "Estable frente a AmpC" },
-          { farmaco: "Pip-tazo", cim: "16/4", clsi: "SDD", eucast: "I", nota: "No sugerida en infección invasiva" },
-          { farmaco: "Ertapenem", cim: "0.25", clsi: "S", eucast: "S", nota: "Activo; espectro evitable" },
-          { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Activo; reservar si es posible" },
-          { farmaco: "Ceftazidima-avibactam", cim: "0.5/4", clsi: "S", eucast: "S", nota: "Activo, herramienta de reserva" },
-          { farmaco: "Amikacina", cim: "2", clsi: "S", eucast: "S", nota: "Activa; toxicidad limita uso" },
-          { farmaco: "Ciprofloxacino", cim: ">1", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
-          { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
-          { farmaco: "Nitrofurantoína", cim: "—", clsi: "—", eucast: "—", nota: "Sin papel en bacteriemia" }
-        ],
-        antibiogramaEvolucionado: [
-          { farmaco: "Ceftriaxona · control", cim: ">32", clsi: "R", eucast: "R", nota: "Viraje tras exposición" },
-          { farmaco: "Ceftazidima · control", cim: "32", clsi: "R", eucast: "R", nota: "Desrepresión seleccionada" },
-          { farmaco: "Cefepima", cim: "2", clsi: "S", eucast: "S", nota: "Actividad conservada" },
-          { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Actividad conservada" }
-        ],
-        pruebas: [
-          {
-            id: "doble_disco",
-            nombre: "Sinergia de doble disco",
-            costo: 1,
-            resultado: "NEGATIVA: sin expansión hacia clavulanato.",
-            interpretacion: "No apoya BLEE, pero una prueba negativa no define por sí sola AmpC."
-          },
-          {
-            id: "mcim_ecim",
-            nombre: "mCIM + eCIM",
-            costo: 2,
-            resultado: "mCIM NEGATIVA; eCIM no interpretable.",
-            interpretacion: "No demuestra carbapenemasa; los carbapenémicos conservados ya hacían baja esa hipótesis."
-          },
-          {
-            id: "apba_edta",
-            nombre: "Inhibición APBA + EDTA",
-            costo: 1,
-            resultado: "APBA POSITIVA / EDTA NEGATIVA.",
-            interpretacion: "Apoya una betalactamasa de serina compatible con AmpC. No distingue por sí sola AmpC cromosómica de plasmídica."
-          },
-          {
-            id: "inmunocromatografia",
-            nombre: "Inmunocromatografía CRE",
-            costo: 2,
-            resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.",
-            interpretacion: "Descarta blancos CRE incluidos, pero no detecta AmpC."
-          },
-          {
-            id: "pcr",
-            nombre: "PCR de carbapenemasas",
-            costo: 3,
-            resultado: "blaKPC, blaNDM, blaVIM, blaIMP y blaOXA-48-like: NO DETECTADOS.",
-            interpretacion: "Solicitud de bajo rendimiento: la prueba no busca la explicación más probable del fenotipo."
-          }
-        ],
+        // Mostrado en el mapa de campaña antes de jugar: la forma real se
+        // sortea al entrar, igual que en ecoli_blee.
+        microorganismo: "Enterobacter / Serratia",
         mecanismosSeleccionables: [
           { id: "BLEE", nombre: "BLEE (CTX-M/SHV/TEM)" },
           { id: "AmpC_inducible", nombre: "AmpC cromosómica inducible" },
@@ -1325,33 +1242,241 @@
           { id: "OXA48", nombre: "OXA-48-like · clase D" },
           { id: "PORINAS", nombre: "BLEE + pérdida de porinas" }
         ],
-        terapias: [
-          { id: "ampicilina", nombre: "Ampicilina", dano: 0, presion: 2, toxicidad: 0, clase: "inactiva", mensaje: "E. cloacae complex posee AmpC cromosómica: ampicilina no es una opción." },
-          { id: "cefazolina", nombre: "Cefazolina · 1.ª", dano: 0, presion: 3, toxicidad: 0, clase: "inactiva", mensaje: "La primera generación es hidrolizada por AmpC basal." },
-          { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", dano: 0, presion: 4, toxicidad: 0, clase: "inactiva", mensaje: "La segunda generación tampoco resuelve esta infección invasiva." },
-          { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", dano: 10, rebote: 30, presion: 20, toxicidad: 0, clase: "trampa", induceAmpC: true, mensaje: "La CIM inicial era susceptible, pero ceftriaxona selecciona la subpoblación desreprimida. El fenotipo vira durante el tratamiento." },
-          { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", dano: 8, rebote: 28, presion: 19, toxicidad: 0, clase: "trampa", induceAmpC: true, mensaje: "La tercera generación favorece expresión clínicamente significativa de AmpC y aparece rebote." },
-          { id: "cefepima", nombre: "Cefepima · 4.ª", dano: 38, presion: 6, toxicidad: 1, clase: "optima", mensaje: "Cefepima permanece estable frente a AmpC y es la opción dirigida si se asegura exposición PK/PD." },
-          { id: "piptazo", nombre: "Piperacilina-tazobactam", dano: 8, rebote: 15, presion: 14, toxicidad: 0, clase: "trampa", mensaje: "Tazobactam protege de forma insuficiente frente a AmpC; no es el esquema sugerido en infección invasiva." },
-          { id: "ertapenem", nombre: "Ertapenem", dano: 34, presion: 14, toxicidad: 1, clase: "razonable", mensaje: "Es activo, pero usa un carbapenémico cuando cefepima susceptible y control de foco permiten ahorrar espectro." },
-          { id: "meropenem", nombre: "Meropenem", dano: 38, presion: 18, toxicidad: 1, clase: "razonable", mensaje: "Es activo, pero la elección refleja el impulso de carbapenémico para todo si el paciente está estable y cefepima es susceptible." },
-          { id: "cza", nombre: "Ceftazidima-avibactam", dano: 42, presion: 28, toxicidad: 2, clase: "exceso", mensaje: "Avibactam inhibe AmpC, pero esta herramienta se reserva para organismos resistentes a carbapenémicos." },
-          { id: "mvb", nombre: "Meropenem-vaborbactam", dano: 42, presion: 30, toxicidad: 2, clase: "exceso", mensaje: "Vaborbactam no aporta una ventaja necesaria frente a este fenotipo susceptible a cefepima." },
-          { id: "irl", nombre: "Imipenem-relebactam", dano: 42, presion: 30, toxicidad: 3, clase: "exceso", mensaje: "Relebactam puede inhibir AmpC, pero esta combinación debe preservarse para resistencia a carbapenémicos." },
-          { id: "cefiderocol", nombre: "Cefiderocol", dano: 44, presion: 32, toxicidad: 3, clase: "exceso", mensaje: "Actividad no equivale a indicación: cefiderocol es una reserva innecesaria aquí." },
-          { id: "atmcza", nombre: "Aztreonam + CZA", dano: 40, presion: 32, toxicidad: 4, clase: "exceso", mensaje: "Esta combinación responde a MBL con enzimas acompañantes, no a una AmpC sensible a cefepima." },
-          { id: "amikacina", nombre: "Amikacina", dano: 20, presion: 8, toxicidad: 18, clase: "toxicidad", mensaje: "Hay actividad, pero la monoterapia bacteriémica añade nefro/ototoxicidad sin ser preferente." },
-          { id: "fosfomicina", nombre: "Fosfomicina oral", dano: 0, presion: 3, toxicidad: 1, clase: "foco", mensaje: "No alcanza una colección intraabdominal ni sostiene tratamiento de bacteriemia." },
-          { id: "nitrofurantoina", nombre: "Nitrofurantoína", dano: 0, presion: 2, toxicidad: 1, clase: "foco", mensaje: "Nitrofurantoína es para cistitis, no para sangre ni abdomen." },
-          { id: "polimixina", nombre: "Polimixina B / colistina", dano: 18, presion: 20, toxicidad: 28, clase: "toxicidad", mensaje: "Provoca toxicidad grave para tratar un aislamiento con opciones betalactámicas dirigidas." }
-        ],
-        items: [
-          { id: "foco", nombre: "Analizar y controlar el foco", mensaje: "Análisis del foco: la colección residual requiere drenaje. Radiología intervencionista la drena y la fuente deja de generar deterioro continuo.", puntos: 15 },
-          { id: "cateter", nombre: "Retirar catéter", mensaje: "Los cultivos pareados no implican al catéter. Retirarlo no controla la colección abdominal.", puntos: -3 },
-          { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se optimiza la exposición PK/PD de cefepima mediante infusión prolongada y ajuste pediátrico según función renal.", puntos: 5 },
-          { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local y se comunica el fenotipo al equipo.", puntos: 3 }
-        ],
-        explicacionFinal: "Enterobacter cloacae complex con {GEN}: AmpC cromosómica desreprimida. La especie, la cefoxitina resistente y el viraje de ceftriaxona tras exposición explican el fenotipo. APBA apoya AmpC, pero no define su localización genética. El plan óptimo fue drenaje de la colección más cefepima susceptible con exposición PK/PD; carbapenémicos y nuevos inhibidores eran activos, pero innecesarios."
+        // Dos especies "SPICE" (con AmpC cromosómica inducible) y dos focos
+        // de control muy distintos (drenaje de colección vs. desbridamiento
+        // de herida), para que "AmpC desreprimida" no se asocie a una sola
+        // especie ni a un solo tipo de intervención de foco.
+        formas: [{
+          id: "enterobacter",
+          spriteId: "enterobacter",
+          muestra: "HEMOCULTIVO",
+          microorganismo: "Enterobacter cloacae complex",
+          mecanismoReal: "AmpC_desreprimida",
+          nombreMecanismo: "AmpC cromosómica desreprimida",
+          variantesGeneticas: ["ampD alterado", "ampR constitutivo", "desrepresión estable de ampC"],
+          introduccion: [
+            "SEGUNDO HEMOCULTIVO // LA ESPECIE TAMBIÉN ES UNA PRUEBA",
+            "Paciente de 6 años con bacteriemia tras apendicitis perforada. Recibió ceftriaxona por 48 horas y persiste una colección intraabdominal residual.",
+            "El aislamiento inicial parece susceptible a ceftriaxona y cefepima. ¿Es estable ese resultado bajo tratamiento?",
+            "En este encuentro debes leer especie, foco y cambio temporal del fenotipo."
+          ],
+          pistaDiagnostica: "E. cloacae complex tiene riesgo moderado de expresión clínicamente significativa de AmpC inducible. El viraje tras ceftriaxona y el apoyo con APBA encajan con selección de una subpoblación desreprimida.",
+          pistaHipotesisIncorrecta: "Relaciona la especie con la exposición a ceftriaxona y el cambio entre el AST inicial y el de control. APBA apoya AmpC, pero no distingue por sí sola origen cromosómico de plasmídico.",
+          frasesAtaque: [
+            "UNA CIM FAVORABLE PUEDE CAMBIAR DURANTE EL TRATAMIENTO.",
+            "SIN CONTROL DE FOCO, LA BACTERIA SIGUE ATACANDO.",
+            "LA PRESIÓN ANTIBIÓTICA PUEDE CAMBIAR EL FENOTIPO."
+          ],
+          paciente: {
+            edad: "6 años",
+            sindrome: "Bacteriemia posapendicitis perforada",
+            estado: "Estable, pero con fiebre persistente",
+            foco: "Colección residual intraabdominal de 3.5 cm",
+            funcionRenal: "TFGe conservada"
+          },
+          antibiograma: [
+            { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Resistencia intrínseca esperada" },
+            { farmaco: "Cefazolina", cim: ">16", clsi: "R", eucast: "R", nota: "Hidrólisis por AmpC basal" },
+            { farmaco: "Cefuroxima", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
+            { farmaco: "Cefoxitina", cim: ">16", clsi: "R", eucast: "—", nota: "Pista AmpC; no confirmatoria" },
+            { farmaco: "Ceftriaxona · inicial", cim: "1", clsi: "S", eucast: "S", nota: "Trampa: resultado inestable" },
+            { farmaco: "Ceftazidima · inicial", cim: "2", clsi: "S", eucast: "S", nota: "Puede virar durante terapia" },
+            { farmaco: "Cefepima", cim: "1", clsi: "S", eucast: "S", nota: "Estable frente a AmpC" },
+            { farmaco: "Pip-tazo", cim: "16/4", clsi: "SDD", eucast: "I", nota: "No sugerida en infección invasiva" },
+            { farmaco: "Ertapenem", cim: "0.25", clsi: "S", eucast: "S", nota: "Activo; espectro evitable" },
+            { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Activo; reservar si es posible" },
+            { farmaco: "Ceftazidima-avibactam", cim: "0.5/4", clsi: "S", eucast: "S", nota: "Activo, herramienta de reserva" },
+            { farmaco: "Amikacina", cim: "2", clsi: "S", eucast: "S", nota: "Activa; toxicidad limita uso" },
+            { farmaco: "Ciprofloxacino", cim: ">1", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "Nitrofurantoína", cim: "—", clsi: "—", eucast: "—", nota: "Sin papel en bacteriemia" }
+          ],
+          antibiogramaEvolucionado: [
+            { farmaco: "Ceftriaxona · control", cim: ">32", clsi: "R", eucast: "R", nota: "Viraje tras exposición" },
+            { farmaco: "Ceftazidima · control", cim: "32", clsi: "R", eucast: "R", nota: "Desrepresión seleccionada" },
+            { farmaco: "Cefepima", cim: "2", clsi: "S", eucast: "S", nota: "Actividad conservada" },
+            { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Actividad conservada" }
+          ],
+          pruebas: [
+            {
+              id: "doble_disco",
+              nombre: "Sinergia de doble disco",
+              costo: 1,
+              resultado: "NEGATIVA: sin expansión hacia clavulanato.",
+              interpretacion: "No apoya BLEE, pero una prueba negativa no define por sí sola AmpC."
+            },
+            {
+              id: "mcim_ecim",
+              nombre: "mCIM + eCIM",
+              costo: 2,
+              resultado: "mCIM NEGATIVA; eCIM no interpretable.",
+              interpretacion: "No demuestra carbapenemasa; los carbapenémicos conservados ya hacían baja esa hipótesis."
+            },
+            {
+              id: "apba_edta",
+              nombre: "Inhibición APBA + EDTA",
+              costo: 1,
+              resultado: "APBA POSITIVA / EDTA NEGATIVA.",
+              interpretacion: "Apoya una betalactamasa de serina compatible con AmpC. No distingue por sí sola AmpC cromosómica de plasmídica."
+            },
+            {
+              id: "inmunocromatografia",
+              nombre: "Inmunocromatografía CRE",
+              costo: 2,
+              resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.",
+              interpretacion: "Descarta blancos CRE incluidos, pero no detecta AmpC."
+            },
+            {
+              id: "pcr",
+              nombre: "PCR de carbapenemasas",
+              costo: 3,
+              resultado: "blaKPC, blaNDM, blaVIM, blaIMP y blaOXA-48-like: NO DETECTADOS.",
+              interpretacion: "Solicitud de bajo rendimiento: la prueba no busca la explicación más probable del fenotipo."
+            }
+          ],
+          terapias: [
+            { id: "ampicilina", nombre: "Ampicilina", dano: 0, presion: 2, toxicidad: 0, clase: "inactiva", mensaje: "E. cloacae complex posee AmpC cromosómica: ampicilina no es una opción." },
+            { id: "cefazolina", nombre: "Cefazolina · 1.ª", dano: 0, presion: 3, toxicidad: 0, clase: "inactiva", mensaje: "La primera generación es hidrolizada por AmpC basal." },
+            { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", dano: 0, presion: 4, toxicidad: 0, clase: "inactiva", mensaje: "La segunda generación tampoco resuelve esta infección invasiva." },
+            { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", dano: 10, rebote: 30, presion: 20, toxicidad: 0, clase: "trampa", induceAmpC: true, mensaje: "La CIM inicial era susceptible, pero ceftriaxona selecciona la subpoblación desreprimida. El fenotipo vira durante el tratamiento." },
+            { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", dano: 8, rebote: 28, presion: 19, toxicidad: 0, clase: "trampa", induceAmpC: true, mensaje: "La tercera generación favorece expresión clínicamente significativa de AmpC y aparece rebote." },
+            { id: "cefepima", nombre: "Cefepima · 4.ª", dano: 38, presion: 6, toxicidad: 1, clase: "optima", mensaje: "Cefepima permanece estable frente a AmpC y es la opción dirigida si se asegura exposición PK/PD." },
+            { id: "piptazo", nombre: "Piperacilina-tazobactam", dano: 8, rebote: 15, presion: 14, toxicidad: 0, clase: "trampa", mensaje: "Tazobactam protege de forma insuficiente frente a AmpC; no es el esquema sugerido en infección invasiva." },
+            { id: "ertapenem", nombre: "Ertapenem", dano: 34, presion: 14, toxicidad: 1, clase: "razonable", mensaje: "Es activo, pero usa un carbapenémico cuando cefepima susceptible y control de foco permiten ahorrar espectro." },
+            { id: "meropenem", nombre: "Meropenem", dano: 38, presion: 18, toxicidad: 1, clase: "razonable", mensaje: "Es activo, pero la elección refleja el impulso de carbapenémico para todo si el paciente está estable y cefepima es susceptible." },
+            { id: "cza", nombre: "Ceftazidima-avibactam", dano: 42, presion: 28, toxicidad: 2, clase: "exceso", mensaje: "Avibactam inhibe AmpC, pero esta herramienta se reserva para organismos resistentes a carbapenémicos." },
+            { id: "mvb", nombre: "Meropenem-vaborbactam", dano: 42, presion: 30, toxicidad: 2, clase: "exceso", mensaje: "Vaborbactam no aporta una ventaja necesaria frente a este fenotipo susceptible a cefepima." },
+            { id: "irl", nombre: "Imipenem-relebactam", dano: 42, presion: 30, toxicidad: 3, clase: "exceso", mensaje: "Relebactam puede inhibir AmpC, pero esta combinación debe preservarse para resistencia a carbapenémicos." },
+            { id: "cefiderocol", nombre: "Cefiderocol", dano: 44, presion: 32, toxicidad: 3, clase: "exceso", mensaje: "Actividad no equivale a indicación: cefiderocol es una reserva innecesaria aquí." },
+            { id: "atmcza", nombre: "Aztreonam + CZA", dano: 40, presion: 32, toxicidad: 4, clase: "exceso", mensaje: "Esta combinación responde a MBL con enzimas acompañantes, no a una AmpC sensible a cefepima." },
+            { id: "amikacina", nombre: "Amikacina", dano: 20, presion: 8, toxicidad: 18, clase: "toxicidad", mensaje: "Hay actividad, pero la monoterapia bacteriémica añade nefro/ototoxicidad sin ser preferente." },
+            { id: "fosfomicina", nombre: "Fosfomicina oral", dano: 0, presion: 3, toxicidad: 1, clase: "foco", mensaje: "No alcanza una colección intraabdominal ni sostiene tratamiento de bacteriemia." },
+            { id: "nitrofurantoina", nombre: "Nitrofurantoína", dano: 0, presion: 2, toxicidad: 1, clase: "foco", mensaje: "Nitrofurantoína es para cistitis, no para sangre ni abdomen." },
+            { id: "polimixina", nombre: "Polimixina B / colistina", dano: 18, presion: 20, toxicidad: 28, clase: "toxicidad", mensaje: "Provoca toxicidad grave para tratar un aislamiento con opciones betalactámicas dirigidas." }
+          ],
+          items: [
+            { id: "foco", nombre: "Analizar y controlar el foco", mensaje: "Análisis del foco: la colección residual requiere drenaje. Radiología intervencionista la drena y la fuente deja de generar deterioro continuo.", puntos: 15 },
+            { id: "cateter", nombre: "Retirar catéter", mensaje: "Los cultivos pareados no implican al catéter. Retirarlo no controla la colección abdominal.", puntos: -3 },
+            { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se optimiza la exposición PK/PD de cefepima mediante infusión prolongada y ajuste pediátrico según función renal.", puntos: 5 },
+            { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local y se comunica el fenotipo al equipo.", puntos: 3 }
+          ],
+          explicacionFinal: "Enterobacter cloacae complex con {GEN}: AmpC cromosómica desreprimida. La especie, la cefoxitina resistente y el viraje de ceftriaxona tras exposición explican el fenotipo. APBA apoya AmpC, pero no define su localización genética. El plan óptimo fue drenaje de la colección más cefepima susceptible con exposición PK/PD; carbapenémicos y nuevos inhibidores eran activos, pero innecesarios."
+        }, {
+          id: "serratia",
+          spriteId: "serratia",
+          muestra: "HEMOCULTIVO",
+          microorganismo: "Serratia marcescens",
+          mecanismoReal: "AmpC_desreprimida",
+          nombreMecanismo: "AmpC cromosómica desreprimida",
+          variantesGeneticas: ["ampD alterado", "ampR constitutivo", "desrepresión estable de ampC"],
+          introduccion: [
+            "TERCER HEMOCULTIVO // LA HERIDA TAMBIÉN CUENTA LA HISTORIA",
+            "Paciente de 9 años, seis días después de una cirugía abdominal, con fiebre persistente y hemocultivos positivos por Serratia marcescens.",
+            "El aislamiento inicial parece susceptible a ceftriaxona y cefepima. ¿Confías en que ese resultado se mantendrá bajo tratamiento?",
+            "Una herida que no cicatriza sigue sembrando bacteria, sin importar cuán bueno sea el antibiótico."
+          ],
+          pistaDiagnostica: "Serratia marcescens tiene riesgo moderado de expresión clínicamente significativa de AmpC inducible. El viraje del antibiograma tras exposición a ceftriaxona, junto con APBA positiva, apoya selección de una subpoblación desreprimida.",
+          pistaHipotesisIncorrecta: "Relaciona la especie con la exposición a ceftriaxona y el cambio entre el AST inicial y el de control; una herida sin desbridar no implica por sí sola un mecanismo distinto.",
+          frasesAtaque: [
+            "LA HERIDA SIN DESBRIDAR SIGUE ALIMENTANDO LA INFECCIÓN.",
+            "EL FENOTIPO DE HOY NO ES GARANTÍA PARA MAÑANA.",
+            "CADA DÍA DE EXPOSICIÓN AUMENTA EL RIESGO DE SELECCIONAR RESISTENCIA."
+          ],
+          paciente: {
+            edad: "9 años",
+            sindrome: "Bacteriemia asociada a infección de sitio quirúrgico",
+            estado: "Estable, con fiebre persistente y eritema periincisional",
+            foco: "Herida quirúrgica abdominal con dehiscencia superficial",
+            funcionRenal: "TFGe conservada"
+          },
+          antibiograma: [
+            { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Resistencia intrínseca esperada" },
+            { farmaco: "Cefazolina", cim: ">16", clsi: "R", eucast: "R", nota: "Hidrólisis por AmpC basal" },
+            { farmaco: "Cefuroxima", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
+            { farmaco: "Cefoxitina", cim: ">16", clsi: "R", eucast: "—", nota: "Pista AmpC; no confirmatoria" },
+            { farmaco: "Ceftriaxona · inicial", cim: "1", clsi: "S", eucast: "S", nota: "Trampa: resultado inestable" },
+            { farmaco: "Ceftazidima · inicial", cim: "2", clsi: "S", eucast: "S", nota: "Puede virar durante terapia" },
+            { farmaco: "Cefepima", cim: "1", clsi: "S", eucast: "S", nota: "Estable frente a AmpC" },
+            { farmaco: "Pip-tazo", cim: "16/4", clsi: "SDD", eucast: "I", nota: "No sugerida en infección invasiva" },
+            { farmaco: "Ertapenem", cim: "0.25", clsi: "S", eucast: "S", nota: "Activo; espectro evitable" },
+            { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Activo; reservar si es posible" },
+            { farmaco: "Ceftazidima-avibactam", cim: "0.5/4", clsi: "S", eucast: "S", nota: "Activo, herramienta de reserva" },
+            { farmaco: "Amikacina", cim: "2", clsi: "S", eucast: "S", nota: "Activa; toxicidad limita uso" },
+            { farmaco: "Ciprofloxacino", cim: ">1", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "Nitrofurantoína", cim: "—", clsi: "—", eucast: "—", nota: "Sin papel en bacteriemia" }
+          ],
+          antibiogramaEvolucionado: [
+            { farmaco: "Ceftriaxona · control", cim: ">32", clsi: "R", eucast: "R", nota: "Viraje tras exposición" },
+            { farmaco: "Ceftazidima · control", cim: "32", clsi: "R", eucast: "R", nota: "Desrepresión seleccionada" },
+            { farmaco: "Cefepima", cim: "2", clsi: "S", eucast: "S", nota: "Actividad conservada" },
+            { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Actividad conservada" }
+          ],
+          pruebas: [
+            {
+              id: "doble_disco",
+              nombre: "Sinergia de doble disco",
+              costo: 1,
+              resultado: "NEGATIVA: sin expansión hacia clavulanato.",
+              interpretacion: "No apoya BLEE, pero una prueba negativa no define por sí sola AmpC."
+            },
+            {
+              id: "mcim_ecim",
+              nombre: "mCIM + eCIM",
+              costo: 2,
+              resultado: "mCIM NEGATIVA; eCIM no interpretable.",
+              interpretacion: "No demuestra carbapenemasa; los carbapenémicos conservados ya hacían baja esa hipótesis."
+            },
+            {
+              id: "apba_edta",
+              nombre: "Inhibición APBA + EDTA",
+              costo: 1,
+              resultado: "APBA POSITIVA / EDTA NEGATIVA.",
+              interpretacion: "Apoya una betalactamasa de serina compatible con AmpC. No distingue por sí sola AmpC cromosómica de plasmídica."
+            },
+            {
+              id: "inmunocromatografia",
+              nombre: "Inmunocromatografía CRE",
+              costo: 2,
+              resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.",
+              interpretacion: "Descarta blancos CRE incluidos, pero no detecta AmpC."
+            },
+            {
+              id: "pcr",
+              nombre: "PCR de carbapenemasas",
+              costo: 3,
+              resultado: "blaKPC, blaNDM, blaVIM, blaIMP y blaOXA-48-like: NO DETECTADOS.",
+              interpretacion: "Solicitud de bajo rendimiento: la prueba no busca la explicación más probable del fenotipo."
+            }
+          ],
+          terapias: [
+            { id: "ampicilina", nombre: "Ampicilina", dano: 0, presion: 2, toxicidad: 0, clase: "inactiva", mensaje: "Serratia marcescens posee AmpC cromosómica: ampicilina no es una opción." },
+            { id: "cefazolina", nombre: "Cefazolina · 1.ª", dano: 0, presion: 3, toxicidad: 0, clase: "inactiva", mensaje: "La primera generación es hidrolizada por AmpC basal." },
+            { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", dano: 0, presion: 4, toxicidad: 0, clase: "inactiva", mensaje: "La segunda generación tampoco resuelve esta infección invasiva." },
+            { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", dano: 10, rebote: 30, presion: 20, toxicidad: 0, clase: "trampa", induceAmpC: true, mensaje: "La CIM inicial era susceptible, pero ceftriaxona selecciona la subpoblación desreprimida. El fenotipo vira durante el tratamiento." },
+            { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", dano: 8, rebote: 28, presion: 19, toxicidad: 0, clase: "trampa", induceAmpC: true, mensaje: "La tercera generación favorece expresión clínicamente significativa de AmpC y aparece rebote." },
+            { id: "cefepima", nombre: "Cefepima · 4.ª", dano: 38, presion: 6, toxicidad: 1, clase: "optima", mensaje: "Cefepima permanece estable frente a AmpC y es la opción dirigida si se asegura exposición PK/PD." },
+            { id: "piptazo", nombre: "Piperacilina-tazobactam", dano: 8, rebote: 15, presion: 14, toxicidad: 0, clase: "trampa", mensaje: "Tazobactam protege de forma insuficiente frente a AmpC; no es el esquema sugerido en infección invasiva." },
+            { id: "ertapenem", nombre: "Ertapenem", dano: 34, presion: 14, toxicidad: 1, clase: "razonable", mensaje: "Es activo, pero usa un carbapenémico cuando cefepima susceptible y control de foco permiten ahorrar espectro." },
+            { id: "meropenem", nombre: "Meropenem", dano: 38, presion: 18, toxicidad: 1, clase: "razonable", mensaje: "Es activo, pero la elección refleja el impulso de carbapenémico para todo si el paciente está estable y cefepima es susceptible." },
+            { id: "cza", nombre: "Ceftazidima-avibactam", dano: 42, presion: 28, toxicidad: 2, clase: "exceso", mensaje: "Avibactam inhibe AmpC, pero esta herramienta se reserva para organismos resistentes a carbapenémicos." },
+            { id: "mvb", nombre: "Meropenem-vaborbactam", dano: 42, presion: 30, toxicidad: 2, clase: "exceso", mensaje: "Vaborbactam no aporta una ventaja necesaria frente a este fenotipo susceptible a cefepima." },
+            { id: "irl", nombre: "Imipenem-relebactam", dano: 42, presion: 30, toxicidad: 3, clase: "exceso", mensaje: "Relebactam puede inhibir AmpC, pero esta combinación debe preservarse para resistencia a carbapenémicos." },
+            { id: "cefiderocol", nombre: "Cefiderocol", dano: 44, presion: 32, toxicidad: 3, clase: "exceso", mensaje: "Actividad no equivale a indicación: cefiderocol es una reserva innecesaria aquí." },
+            { id: "atmcza", nombre: "Aztreonam + CZA", dano: 40, presion: 32, toxicidad: 4, clase: "exceso", mensaje: "Esta combinación responde a MBL con enzimas acompañantes, no a una AmpC sensible a cefepima." },
+            { id: "amikacina", nombre: "Amikacina", dano: 20, presion: 8, toxicidad: 18, clase: "toxicidad", mensaje: "Hay actividad, pero la monoterapia bacteriémica añade nefro/ototoxicidad sin ser preferente." },
+            { id: "fosfomicina", nombre: "Fosfomicina oral", dano: 0, presion: 3, toxicidad: 1, clase: "foco", mensaje: "No alcanza una herida quirúrgica profunda ni sostiene tratamiento de bacteriemia." },
+            { id: "nitrofurantoina", nombre: "Nitrofurantoína", dano: 0, presion: 2, toxicidad: 1, clase: "foco", mensaje: "Nitrofurantoína es para cistitis, no para sangre ni tejido quirúrgico." },
+            { id: "polimixina", nombre: "Polimixina B / colistina", dano: 18, presion: 20, toxicidad: 28, clase: "toxicidad", mensaje: "Provoca toxicidad grave para tratar un aislamiento con opciones betalactámicas dirigidas." }
+          ],
+          items: [
+            { id: "foco", nombre: "Analizar y controlar el foco", mensaje: "Análisis del foco: la herida tiene tejido desvitalizado. Cirugía realiza desbridamiento y lavado; la fuente deja de sembrar bacteria.", puntos: 15 },
+            { id: "cateter", nombre: "Retirar catéter", mensaje: "No existe un catéter implicado. Retirarlo por rutina sería una intervención sin blanco.", puntos: -3 },
+            { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se optimiza la exposición PK/PD de cefepima mediante infusión prolongada y ajuste pediátrico según función renal.", puntos: 5 },
+            { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local y se comunica el fenotipo al equipo.", puntos: 3 }
+          ],
+          explicacionFinal: "Serratia marcescens con {GEN}: AmpC cromosómica desreprimida. La especie, la cefoxitina resistente y el viraje de ceftriaxona tras exposición explican el fenotipo. El plan óptimo fue desbridamiento quirúrgico de la herida más cefepima susceptible con exposición PK/PD adecuada; carbapenémicos y nuevos inhibidores eran activos, pero innecesarios."
+        }]
       }, ...ENCUENTROS_ARTILLERIA]
     };
 
@@ -1859,7 +1984,11 @@
           "001113333333333333333331110",
           "000001111111111111111110000"
         ],
-        estilo: "capsulada",
+        // Enterobacter cloacae es móvil (flagelos perítricos) y su cápsula
+        // es discreta, a diferencia de Klebsiella: usa el mismo estilo que
+        // E. coli/Citrobacter en vez de la cápsula, para que el halo grueso
+        // quede como rasgo distintivo exclusivo de Klebsiella.
+        estilo: "peritrica",
         expresiones: {
           sana: { ojos: [[9, 5], [17, 5]], boca: [[11, 9], [12, 10], [13, 10], [14, 10], [15, 9]] },
           presionada: { ojos: [[9, 6], [17, 6]], boca: [[11, 10], [12, 9], [13, 9], [14, 9], [15, 10]] },
@@ -1969,6 +2098,12 @@
           "0000000111111111111111110000000"
         ],
         estilo: "serratia",
+        // Prodigiosina: el pigmento rojo/rosado que hace a S. marcescens
+        // reconocible incluso fuera del laboratorio (colonias rojas a
+        // temperatura ambiente). Tinta la membrana y los flagelos; un tono
+        // distinto de COLOR.alerta para no perder el contraste con los
+        // puntos de cromosoma (pixel "4"), que siguen usando COLOR.alerta.
+        colorAcento: "#ff4f78",
         expresiones: {
           sana: { ojos: [[10, 5], [20, 5]], boca: [[13, 9], [14, 10], [15, 10], [16, 10], [17, 9]] },
           presionada: { ojos: [[10, 6], [20, 6]], boca: [[13, 10], [14, 9], [15, 9], [16, 9], [17, 10]] },
@@ -2074,7 +2209,10 @@
       const origenX = x - ancho / 2 + bobX;
       const origenY = y - alto / 2 + bobY;
 
-      contexto.strokeStyle = COLOR.medio;
+      // colorAcento es opcional: hoy solo Serratia lo usa, para su pigmento
+      // rojo/rosado (prodigiosina) — el rasgo más reconocible de la especie.
+      const colorEspecie = sprite.colorAcento || COLOR.medio;
+      contexto.strokeStyle = colorEspecie;
       contexto.lineWidth = Math.max(2, escalaActual / 2.5);
       contexto.beginPath();
       contexto.moveTo(origenX + escalaActual * 2, origenY + escalaActual * 3);
@@ -2099,7 +2237,8 @@
       }
       contexto.stroke();
 
-      // Fimbrias cortas: E. coli es más fina; Enterobacter muestra una cápsula doble.
+      // Fimbrias cortas: más espaciadas y sutiles en Klebsiella (su cápsula
+      // domina la silueta), más densas en las especies hiperflageladas.
       contexto.beginPath();
       const saltoPili = sprite.estilo === "capsulada" ? 5 : (sprite.estilo === "hiperflagelada" ? 2 : 3);
       for (let indice = 3; indice < columnas - 3; indice += saltoPili) {
@@ -2117,7 +2256,7 @@
         contexto.strokeRect(origenX - 5, origenY - 5, ancho + 10, alto + 10);
       }
 
-      dibujarMatriz(sprite.matriz, origenX, origenY, escalaActual, expresionId === "derrotada" ? COLOR.tenue : COLOR.principal);
+      dibujarMatriz(sprite.matriz, origenX, origenY, escalaActual, expresionId === "derrotada" ? COLOR.tenue : (sprite.colorAcento || COLOR.principal));
 
       contexto.fillStyle = COLOR.fondo;
       const ojos = expresion.ojosX || expresion.ojos || [];
