@@ -679,7 +679,7 @@
       id: "serratia_eflujo",
       capitulo: "CAPÍTULO 3 · ARTILLERÍA PESADA",
       nivelResistencia: "MDR · INFERENCIA POR EXCLUSIÓN",
-      dificultad: { amenazaBase: 23, creditosLaboratorio: 7, gastoLaboratorioIdeal: 2 },
+      dificultad: { amenazaBase: 23, creditosLaboratorio: 6, gastoLaboratorioIdeal: 2 },
       spriteId: "serratia",
       patronBase: "eflujo",
       muestra: "LCR + DERIVACIÓN",
@@ -756,7 +756,7 @@
       id: "klebsiella_cre_jefe",
       capitulo: "CAPÍTULO 4 · JEFE CRE",
       nivelResistencia: "CRE / XDR · FORMA ALEATORIA",
-      dificultad: { amenazaBase: 26, creditosLaboratorio: 7, gastoLaboratorioIdeal: 4 },
+      dificultad: { amenazaBase: 26, creditosLaboratorio: 6, gastoLaboratorioIdeal: 4 },
       spriteId: "klebsiella",
       patronBase: "kpc",
       muestra: "HEMOCULTIVO",
@@ -988,87 +988,10 @@
         capitulo: "CAPÍTULO 2 · RESISTENCIA ADQUIRIDA",
         nivelResistencia: "MDR · MECANISMO ÚNICO",
         dificultad: { amenazaBase: 11, creditosLaboratorio: 6, gastoLaboratorioIdeal: 1 },
-        spriteId: "ecoli",
+        // Microorganismo mostrado en el mapa de campaña antes de jugar: dos
+        // especies posibles, ya que la forma real se sortea al entrar.
+        microorganismo: "E. coli / K. pneumoniae",
         patronBase: "blee",
-        muestra: "HEMOCULTIVO",
-        microorganismo: "Escherichia coli",
-        mecanismoReal: "BLEE",
-        nombreMecanismo: "BLEE",
-        variantesGeneticas: ["CTX-M-15", "SHV-12", "TEM-52"],
-        introduccion: [
-          "TURNO DE GUARDIA // HEMOCULTIVO POSITIVO",
-          "Paciente de 8 años. Pielonefritis con bacteriemia por Escherichia coli. Está estable tras la reanimación inicial.",
-          "El antibiograma ya está disponible. Antes de tratar, escucha lo que el fenotipo intenta decirte.",
-          "Tu objetivo no es usar el arma más grande. Tu objetivo es entender la cerradura."
-        ],
-        pistaDiagnostica: "La resistencia a ceftriaxona con carbapenémicos conservados encaja. La doble disco puede reforzarla, pero la inferencia nace del fenotipo.",
-        pistaHipotesisIncorrecta: "Ese mecanismo no explica bien el patrón completo. Revisa organismo, ceftriaxona y carbapenémicos antes de escalar.",
-        frasesAtaque: [
-          "EL TIEMPO ES ORO EN LA SEPSIS.",
-          "LA BACTERIA ATACA AL ORGANISMO: PROTEGE AL PACIENTE.",
-          "CADA ERROR AUMENTA LA PRESIÓN SOBRE EL HUÉSPED."
-        ],
-        paciente: {
-          edad: "8 años",
-          sindrome: "Pielonefritis con bacteriemia",
-          estado: "Estable tras reanimación inicial",
-          foco: "Urinario; ultrasonido sin obstrucción",
-          funcionRenal: "TFGe conservada"
-        },
-        antibiograma: [
-          { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Hidrólisis esperada" },
-          { farmaco: "Cefazolina", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
-          { farmaco: "Cefuroxima", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
-          { farmaco: "Cefoxitina", cim: "4", clsi: "S", eucast: "—", nota: "Pista contra AmpC; no confirmatoria" },
-          { farmaco: "Ceftriaxona", cim: "8", clsi: "R", eucast: "R", nota: "Fenotipo centinela" },
-          { farmaco: "Ceftazidima", cim: "16", clsi: "R", eucast: "R", nota: "Variable en BLEE" },
-          { farmaco: "Cefepima", cim: "2", clsi: "S", eucast: "I", nota: "Trampa: no preferida en BLEE invasiva" },
-          { farmaco: "Pip-tazo", cim: "8/4", clsi: "S", eucast: "S", nota: "Trampa en bacteriemia" },
-          { farmaco: "Ertapenem", cim: "0.25", clsi: "S", eucast: "S", nota: "Activo" },
-          { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Preferente en este caso" },
-          { farmaco: "Ceftazidima-avibactam", cim: "0.5/4", clsi: "S", eucast: "S", nota: "Activo, espectro innecesario" },
-          { farmaco: "Amikacina", cim: "4", clsi: "S", eucast: "S", nota: "Activa; toxicidad limita monoterapia" },
-          { farmaco: "Ciprofloxacino", cim: ">1", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
-          { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
-          { farmaco: "Nitrofurantoína", cim: "32", clsi: "S*", eucast: "S*", nota: "*Solo infección urinaria baja" }
-        ],
-        pruebas: [
-          {
-            id: "doble_disco",
-            nombre: "Sinergia de doble disco",
-            costo: 1,
-            resultado: "POSITIVA: aumento de 6 mm hacia clavulanato.",
-            interpretacion: "Compatible con BLEE. Es la prueba de mayor rendimiento en este encuentro."
-          },
-          {
-            id: "mcim_ecim",
-            nombre: "mCIM + eCIM",
-            costo: 2,
-            resultado: "mCIM NEGATIVA; eCIM no interpretable.",
-            interpretacion: "No demuestra carbapenemasa. La susceptibilidad a carbapenémicos ya hacía baja esa hipótesis."
-          },
-          {
-            id: "apba_edta",
-            nombre: "Inhibición APBA + EDTA",
-            costo: 1,
-            resultado: "APBA NEGATIVA / EDTA NEGATIVA.",
-            interpretacion: "No apoya KPC/AmpC ni MBL; no confirma por sí sola una BLEE."
-          },
-          {
-            id: "inmunocromatografia",
-            nombre: "Inmunocromatografía CRE",
-            costo: 2,
-            resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.",
-            interpretacion: "Prueba válida, pero de bajo rendimiento ante este fenotipo."
-          },
-          {
-            id: "pcr",
-            nombre: "PCR de carbapenemasas",
-            costo: 3,
-            resultado: "blaKPC, blaNDM, blaVIM, blaIMP y blaOXA-48-like: NO DETECTADOS.",
-            interpretacion: "Resultado correcto, solicitud excesiva: descarta lo que el fenotipo ya hacía improbable."
-          }
-        ],
         mecanismosSeleccionables: [
           { id: "BLEE", nombre: "BLEE (CTX-M/SHV/TEM)" },
           { id: "AmpC", nombre: "AmpC inducible/desreprimida" },
@@ -1077,33 +1000,229 @@
           { id: "OXA48", nombre: "OXA-48-like · clase D" },
           { id: "PORINAS", nombre: "BLEE + porinas/eflujo" }
         ],
-        terapias: [
-          { id: "ampicilina", nombre: "Ampicilina", dano: 0, presion: 2, toxicidad: 0, clase: "inactiva", mensaje: "La BLEE hidroliza la ampicilina. La carga bacteriana no cede." },
-          { id: "cefazolina", nombre: "Cefazolina · 1.ª", dano: 0, presion: 3, toxicidad: 0, clase: "inactiva", mensaje: "La primera generación no atraviesa esta defensa enzimática." },
-          { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", dano: 0, presion: 4, toxicidad: 0, clase: "inactiva", mensaje: "La segunda generación también es hidrolizada." },
-          { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", dano: 0, presion: 9, toxicidad: 0, clase: "inactiva", mensaje: "La ceftriaxona alimenta la máscara BLEE. El fenotipo ya advertía resistencia." },
-          { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", dano: 0, presion: 10, toxicidad: 0, clase: "inactiva", mensaje: "No hay daño clínicamente útil: la CIM es resistente." },
-          { id: "cefepima", nombre: "Cefepima · 4.ª", dano: 7, rebote: 13, presion: 13, toxicidad: 0, clase: "trampa", mensaje: "La CIM parece favorable, pero BLEE invasiva no es terreno seguro: respuesta inicial y rebote." },
-          { id: "piptazo", nombre: "Piperacilina-tazobactam", dano: 8, rebote: 14, presion: 14, toxicidad: 0, clase: "trampa", mensaje: "Sensible in vitro no significa óptimo en bacteriemia BLEE: aparece rebote por carga/inóculo." },
-          { id: "ertapenem", nombre: "Ertapenem", dano: 28, presion: 7, toxicidad: 1, clase: "razonable", mensaje: "Activo y razonable en paciente estable; el caso premia meropenem durante la fase invasiva inicial." },
-          { id: "meropenem", nombre: "Meropenem", dano: 36, presion: 8, toxicidad: 1, clase: "optima", mensaje: "La carga desciende de forma consistente. En esta bacteriemia BLEE, es el esquema preferente." },
-          { id: "cza", nombre: "Ceftazidima-avibactam", dano: 40, presion: 25, toxicidad: 2, clase: "exceso", mensaje: "Es activa, pero consume una herramienta de reserva sin necesidad microbiológica." },
-          { id: "mvb", nombre: "Meropenem-vaborbactam", dano: 42, presion: 28, toxicidad: 2, clase: "exceso", mensaje: "Golpea con fuerza, pero vaborbactam no aporta valor frente a una BLEE sin KPC." },
-          { id: "irl", nombre: "Imipenem-relebactam", dano: 42, presion: 28, toxicidad: 3, clase: "exceso", mensaje: "Activo, pero relebactam es una llave demasiado costosa para esta cerradura." },
-          { id: "cefiderocol", nombre: "Cefiderocol", dano: 44, presion: 32, toxicidad: 3, clase: "exceso", mensaje: "Activo in vitro; reservarlo evita quemar puentes terapéuticos futuros." },
-          { id: "atmcza", nombre: "Aztreonam + CZA", dano: 40, presion: 30, toxicidad: 4, clase: "exceso", mensaje: "Combinación activa, diseñada para otro problema: MBL con betalactamasas acompañantes." },
-          { id: "amikacina", nombre: "Amikacina", dano: 20, presion: 8, toxicidad: 18, clase: "toxicidad", mensaje: "Hay actividad, pero la monoterapia invasiva paga un precio nefro/ototóxico innecesario." },
-          { id: "fosfomicina", nombre: "Fosfomicina oral", dano: 0, presion: 3, toxicidad: 1, clase: "foco", mensaje: "La concentración urinaria no rescata una bacteriemia. El sitio manda." },
-          { id: "nitrofurantoina", nombre: "Nitrofurantoína", dano: 0, presion: 2, toxicidad: 1, clase: "foco", mensaje: "Solo sirve para cistitis: no alcanza parénquima renal ni sangre." },
-          { id: "polimixina", nombre: "Polimixina B / colistina", dano: 18, presion: 20, toxicidad: 28, clase: "toxicidad", mensaje: "La bacteria retrocede, pero el paciente recibe una tormenta nefro/neurotóxica evitable." }
-        ],
-        items: [
-          { id: "foco", nombre: "Analizar y controlar el foco", mensaje: "Análisis del foco: ultrasonido renal sin obstrucción ni colección. No existe un procedimiento que sustituya al antibiótico.", puntos: 5 },
-          { id: "cateter", nombre: "Retirar catéter", mensaje: "No existe un catéter implicado. Retirarlo por rutina sería una intervención sin blanco.", puntos: -3 },
-          { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se confirma función renal y se optimiza la exposición PK/PD de meropenem. El tratamiento ahora puede cumplir su objetivo.", puntos: 15 },
-          { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local y se corta una posible cadena de transmisión.", puntos: 3 }
-        ],
-        explicacionFinal: "E. coli productor de BLEE con variante {GEN}. La resistencia a ceftriaxona y la sinergia con clavulanato sostienen el mecanismo. En bacteriemia, piperacilina-tazobactam y cefepima no son opciones preferentes aunque el laboratorio parezca tranquilizador. Nitrofurantoína y fosfomicina oral no alcanzan concentraciones séricas adecuadas."
+        // Dos viñetas clínicas distintas para el mismo mecanismo (BLEE): la
+        // especie, el foco y el sitio de muestra cambian; el motor sortea
+        // una al entrar o rejugar, sin repetir la anterior. Esto demuestra
+        // que la BLEE no es un rasgo de una sola especie ni de un solo foco.
+        formas: [{
+          id: "ecoli",
+          spriteId: "ecoli",
+          muestra: "HEMOCULTIVO",
+          microorganismo: "Escherichia coli",
+          mecanismoReal: "BLEE",
+          nombreMecanismo: "BLEE",
+          variantesGeneticas: ["CTX-M-15", "SHV-12", "TEM-52"],
+          introduccion: [
+            "TURNO DE GUARDIA // HEMOCULTIVO POSITIVO",
+            "Paciente de 8 años. Pielonefritis con bacteriemia por Escherichia coli. Está estable tras la reanimación inicial.",
+            "El antibiograma ya está disponible. Antes de tratar, escucha lo que el fenotipo intenta decirte.",
+            "Tu objetivo no es usar el arma más grande. Tu objetivo es entender la cerradura."
+          ],
+          pistaDiagnostica: "La resistencia a ceftriaxona con carbapenémicos conservados encaja. La doble disco puede reforzarla, pero la inferencia nace del fenotipo.",
+          pistaHipotesisIncorrecta: "Ese mecanismo no explica bien el patrón completo. Revisa organismo, ceftriaxona y carbapenémicos antes de escalar.",
+          frasesAtaque: [
+            "EL TIEMPO ES ORO EN LA SEPSIS.",
+            "LA BACTERIA ATACA AL ORGANISMO: PROTEGE AL PACIENTE.",
+            "CADA ERROR AUMENTA LA PRESIÓN SOBRE EL HUÉSPED."
+          ],
+          paciente: {
+            edad: "8 años",
+            sindrome: "Pielonefritis con bacteriemia",
+            estado: "Estable tras reanimación inicial",
+            foco: "Urinario; ultrasonido sin obstrucción",
+            funcionRenal: "TFGe conservada"
+          },
+          antibiograma: [
+            { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Hidrólisis esperada" },
+            { farmaco: "Cefazolina", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
+            { farmaco: "Cefuroxima", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
+            { farmaco: "Cefoxitina", cim: "4", clsi: "S", eucast: "—", nota: "Pista contra AmpC; no confirmatoria" },
+            { farmaco: "Ceftriaxona", cim: "8", clsi: "R", eucast: "R", nota: "Fenotipo centinela" },
+            { farmaco: "Ceftazidima", cim: "16", clsi: "R", eucast: "R", nota: "Variable en BLEE" },
+            { farmaco: "Cefepima", cim: "2", clsi: "S", eucast: "I", nota: "Trampa: no preferida en BLEE invasiva" },
+            { farmaco: "Pip-tazo", cim: "8/4", clsi: "S", eucast: "S", nota: "Trampa en bacteriemia" },
+            { farmaco: "Ertapenem", cim: "0.25", clsi: "S", eucast: "S", nota: "Activo" },
+            { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Preferente en este caso" },
+            { farmaco: "Ceftazidima-avibactam", cim: "0.5/4", clsi: "S", eucast: "S", nota: "Activo, espectro innecesario" },
+            { farmaco: "Amikacina", cim: "4", clsi: "S", eucast: "S", nota: "Activa; toxicidad limita monoterapia" },
+            { farmaco: "Ciprofloxacino", cim: ">1", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "Nitrofurantoína", cim: "32", clsi: "S*", eucast: "S*", nota: "*Solo infección urinaria baja" }
+          ],
+          pruebas: [
+            {
+              id: "doble_disco",
+              nombre: "Sinergia de doble disco",
+              costo: 1,
+              resultado: "POSITIVA: aumento de 6 mm hacia clavulanato.",
+              interpretacion: "Compatible con BLEE. Es la prueba de mayor rendimiento en este encuentro."
+            },
+            {
+              id: "mcim_ecim",
+              nombre: "mCIM + eCIM",
+              costo: 2,
+              resultado: "mCIM NEGATIVA; eCIM no interpretable.",
+              interpretacion: "No demuestra carbapenemasa. La susceptibilidad a carbapenémicos ya hacía baja esa hipótesis."
+            },
+            {
+              id: "apba_edta",
+              nombre: "Inhibición APBA + EDTA",
+              costo: 1,
+              resultado: "APBA NEGATIVA / EDTA NEGATIVA.",
+              interpretacion: "No apoya KPC/AmpC ni MBL; no confirma por sí sola una BLEE."
+            },
+            {
+              id: "inmunocromatografia",
+              nombre: "Inmunocromatografía CRE",
+              costo: 2,
+              resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.",
+              interpretacion: "Prueba válida, pero de bajo rendimiento ante este fenotipo."
+            },
+            {
+              id: "pcr",
+              nombre: "PCR de carbapenemasas",
+              costo: 3,
+              resultado: "blaKPC, blaNDM, blaVIM, blaIMP y blaOXA-48-like: NO DETECTADOS.",
+              interpretacion: "Resultado correcto, solicitud excesiva: descarta lo que el fenotipo ya hacía improbable."
+            }
+          ],
+          terapias: [
+            { id: "ampicilina", nombre: "Ampicilina", dano: 0, presion: 2, toxicidad: 0, clase: "inactiva", mensaje: "La BLEE hidroliza la ampicilina. La carga bacteriana no cede." },
+            { id: "cefazolina", nombre: "Cefazolina · 1.ª", dano: 0, presion: 3, toxicidad: 0, clase: "inactiva", mensaje: "La primera generación no atraviesa esta defensa enzimática." },
+            { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", dano: 0, presion: 4, toxicidad: 0, clase: "inactiva", mensaje: "La segunda generación también es hidrolizada." },
+            { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", dano: 0, presion: 9, toxicidad: 0, clase: "inactiva", mensaje: "La ceftriaxona alimenta la máscara BLEE. El fenotipo ya advertía resistencia." },
+            { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", dano: 0, presion: 10, toxicidad: 0, clase: "inactiva", mensaje: "No hay daño clínicamente útil: la CIM es resistente." },
+            { id: "cefepima", nombre: "Cefepima · 4.ª", dano: 7, rebote: 13, presion: 13, toxicidad: 0, clase: "trampa", mensaje: "La CIM parece favorable, pero BLEE invasiva no es terreno seguro: respuesta inicial y rebote." },
+            { id: "piptazo", nombre: "Piperacilina-tazobactam", dano: 8, rebote: 14, presion: 14, toxicidad: 0, clase: "trampa", mensaje: "Sensible in vitro no significa óptimo en bacteriemia BLEE: aparece rebote por carga/inóculo." },
+            { id: "ertapenem", nombre: "Ertapenem", dano: 28, presion: 7, toxicidad: 1, clase: "razonable", mensaje: "Activo y razonable en paciente estable; el caso premia meropenem durante la fase invasiva inicial." },
+            { id: "meropenem", nombre: "Meropenem", dano: 36, presion: 8, toxicidad: 1, clase: "optima", mensaje: "La carga desciende de forma consistente. En esta bacteriemia BLEE, es el esquema preferente." },
+            { id: "cza", nombre: "Ceftazidima-avibactam", dano: 40, presion: 25, toxicidad: 2, clase: "exceso", mensaje: "Es activa, pero consume una herramienta de reserva sin necesidad microbiológica." },
+            { id: "mvb", nombre: "Meropenem-vaborbactam", dano: 42, presion: 28, toxicidad: 2, clase: "exceso", mensaje: "Golpea con fuerza, pero vaborbactam no aporta valor frente a una BLEE sin KPC." },
+            { id: "irl", nombre: "Imipenem-relebactam", dano: 42, presion: 28, toxicidad: 3, clase: "exceso", mensaje: "Activo, pero relebactam es una llave demasiado costosa para esta cerradura." },
+            { id: "cefiderocol", nombre: "Cefiderocol", dano: 44, presion: 32, toxicidad: 3, clase: "exceso", mensaje: "Activo in vitro; reservarlo evita quemar puentes terapéuticos futuros." },
+            { id: "atmcza", nombre: "Aztreonam + CZA", dano: 40, presion: 30, toxicidad: 4, clase: "exceso", mensaje: "Combinación activa, diseñada para otro problema: MBL con betalactamasas acompañantes." },
+            { id: "amikacina", nombre: "Amikacina", dano: 20, presion: 8, toxicidad: 18, clase: "toxicidad", mensaje: "Hay actividad, pero la monoterapia invasiva paga un precio nefro/ototóxico innecesario." },
+            { id: "fosfomicina", nombre: "Fosfomicina oral", dano: 0, presion: 3, toxicidad: 1, clase: "foco", mensaje: "La concentración urinaria no rescata una bacteriemia. El sitio manda." },
+            { id: "nitrofurantoina", nombre: "Nitrofurantoína", dano: 0, presion: 2, toxicidad: 1, clase: "foco", mensaje: "Solo sirve para cistitis: no alcanza parénquima renal ni sangre." },
+            { id: "polimixina", nombre: "Polimixina B / colistina", dano: 18, presion: 20, toxicidad: 28, clase: "toxicidad", mensaje: "La bacteria retrocede, pero el paciente recibe una tormenta nefro/neurotóxica evitable." }
+          ],
+          items: [
+            { id: "foco", nombre: "Analizar y controlar el foco", mensaje: "Análisis del foco: ultrasonido renal sin obstrucción ni colección. No existe un procedimiento que sustituya al antibiótico.", puntos: 5 },
+            { id: "cateter", nombre: "Retirar catéter", mensaje: "No existe un catéter implicado. Retirarlo por rutina sería una intervención sin blanco.", puntos: -3 },
+            { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se confirma función renal y se optimiza la exposición PK/PD de meropenem. El tratamiento ahora puede cumplir su objetivo.", puntos: 15 },
+            { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local y se corta una posible cadena de transmisión.", puntos: 3 }
+          ],
+          explicacionFinal: "E. coli productor de BLEE con variante {GEN}. La resistencia a ceftriaxona y la sinergia con clavulanato sostienen el mecanismo. En bacteriemia, piperacilina-tazobactam y cefepima no son opciones preferentes aunque el laboratorio parezca tranquilizador. Nitrofurantoína y fosfomicina oral no alcanzan concentraciones séricas adecuadas."
+        }, {
+          id: "klebsiella_neumonia",
+          spriteId: "klebsiella",
+          muestra: "CULTIVO DE EXPECTORACIÓN",
+          microorganismo: "Klebsiella pneumoniae",
+          mecanismoReal: "BLEE",
+          nombreMecanismo: "BLEE",
+          variantesGeneticas: ["SHV-12", "CTX-M-14", "TEM-52"],
+          introduccion: [
+            "TURNO DE GUARDIA // NEUMONÍA CON FIEBRE PERSISTENTE",
+            "Paciente de 6 años con neumonía adquirida en la comunidad e insuficiencia respiratoria leve por Klebsiella pneumoniae.",
+            "El antibiograma ya está disponible. Hoy el pulmón es el campo de batalla, no la vejiga ni la sangre.",
+            "La misma cerradura puede aparecer en un pulmón que en un hemocultivo: no cambies de estrategia solo porque cambió el órgano."
+          ],
+          pistaDiagnostica: "La resistencia a ceftriaxona con carbapenémicos conservados, sumada a una especie con β-lactamasa basal distinta, sostiene el mismo mecanismo adquirido que en una bacteriemia por E. coli.",
+          pistaHipotesisIncorrecta: "Que el foco sea pulmonar no cambia el mecanismo enzimático. Revisa ceftriaxona, cefoxitina y carbapenémicos antes de escalar.",
+          frasesAtaque: [
+            "EL PULMÓN TAMBIÉN EXIGE UN DIAGNÓSTICO PRECISO.",
+            "LA FIEBRE PERSISTE MIENTRAS EL PLAN SEA INCORRECTO.",
+            "CADA HORA SIN TRATAMIENTO DIRIGIDO CUESTA RESERVA VENTILATORIA."
+          ],
+          paciente: {
+            edad: "6 años",
+            sindrome: "Neumonía adquirida en la comunidad con insuficiencia respiratoria leve",
+            estado: "Estable con oxígeno suplementario a bajo flujo",
+            foco: "Pulmonar; infiltrado en lóbulo inferior derecho, sin derrame",
+            funcionRenal: "TFGe conservada"
+          },
+          antibiograma: [
+            { farmaco: "Ampicilina", cim: ">32", clsi: "R", eucast: "R", nota: "Intrínseca de la especie + hidrólisis BLEE" },
+            { farmaco: "Cefazolina", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
+            { farmaco: "Cefuroxima", cim: ">16", clsi: "R", eucast: "R", nota: "No útil" },
+            { farmaco: "Cefoxitina", cim: "4", clsi: "S", eucast: "—", nota: "Pista contra AmpC; no confirmatoria" },
+            { farmaco: "Ceftriaxona", cim: "8", clsi: "R", eucast: "R", nota: "Fenotipo centinela" },
+            { farmaco: "Ceftazidima", cim: "16", clsi: "R", eucast: "R", nota: "Variable en BLEE" },
+            { farmaco: "Cefepima", cim: "2", clsi: "S", eucast: "I", nota: "Trampa: no preferida en BLEE invasiva" },
+            { farmaco: "Pip-tazo", cim: "8/4", clsi: "S", eucast: "S", nota: "Trampa en infección pulmonar invasiva" },
+            { farmaco: "Ertapenem", cim: "0.25", clsi: "S", eucast: "S", nota: "Activo" },
+            { farmaco: "Meropenem", cim: "0.12", clsi: "S", eucast: "S", nota: "Preferente en este caso" },
+            { farmaco: "Ceftazidima-avibactam", cim: "0.5/4", clsi: "S", eucast: "S", nota: "Activo, espectro innecesario" },
+            { farmaco: "Amikacina", cim: "4", clsi: "S", eucast: "S", nota: "Activa; toxicidad limita monoterapia" },
+            { farmaco: "Ciprofloxacino", cim: ">1", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "TMP-SMX", cim: ">4/76", clsi: "R", eucast: "R", nota: "Corresistencia asociada" },
+            { farmaco: "Nitrofurantoína", cim: "32", clsi: "S*", eucast: "S*", nota: "*Sin papel en foco pulmonar" }
+          ],
+          pruebas: [
+            {
+              id: "doble_disco",
+              nombre: "Sinergia de doble disco",
+              costo: 1,
+              resultado: "POSITIVA: aumento de 6 mm hacia clavulanato.",
+              interpretacion: "Compatible con BLEE. Es la prueba de mayor rendimiento en este encuentro."
+            },
+            {
+              id: "mcim_ecim",
+              nombre: "mCIM + eCIM",
+              costo: 2,
+              resultado: "mCIM NEGATIVA; eCIM no interpretable.",
+              interpretacion: "No demuestra carbapenemasa. La susceptibilidad a carbapenémicos ya hacía baja esa hipótesis."
+            },
+            {
+              id: "apba_edta",
+              nombre: "Inhibición APBA + EDTA",
+              costo: 1,
+              resultado: "APBA NEGATIVA / EDTA NEGATIVA.",
+              interpretacion: "No apoya KPC/AmpC ni MBL; no confirma por sí sola una BLEE."
+            },
+            {
+              id: "inmunocromatografia",
+              nombre: "Inmunocromatografía CRE",
+              costo: 2,
+              resultado: "KPC, NDM, VIM, IMP y OXA-48-like: NO DETECTADAS.",
+              interpretacion: "Prueba válida, pero de bajo rendimiento ante este fenotipo."
+            },
+            {
+              id: "pcr",
+              nombre: "PCR de carbapenemasas",
+              costo: 3,
+              resultado: "blaKPC, blaNDM, blaVIM, blaIMP y blaOXA-48-like: NO DETECTADOS.",
+              interpretacion: "Resultado correcto, solicitud excesiva: descarta lo que el fenotipo ya hacía improbable."
+            }
+          ],
+          terapias: [
+            { id: "ampicilina", nombre: "Ampicilina", dano: 0, presion: 2, toxicidad: 0, clase: "inactiva", mensaje: "K. pneumoniae tiene resistencia intrínseca a ampicilina; la BLEE solo la refuerza." },
+            { id: "cefazolina", nombre: "Cefazolina · 1.ª", dano: 0, presion: 3, toxicidad: 0, clase: "inactiva", mensaje: "La primera generación no atraviesa esta defensa enzimática." },
+            { id: "cefuroxima", nombre: "Cefuroxima · 2.ª", dano: 0, presion: 4, toxicidad: 0, clase: "inactiva", mensaje: "La segunda generación también es hidrolizada." },
+            { id: "ceftriaxona", nombre: "Ceftriaxona · 3.ª", dano: 0, presion: 9, toxicidad: 0, clase: "inactiva", mensaje: "La ceftriaxona alimenta la máscara BLEE. El fenotipo ya advertía resistencia." },
+            { id: "ceftazidima", nombre: "Ceftazidima · 3.ª", dano: 0, presion: 10, toxicidad: 0, clase: "inactiva", mensaje: "No hay daño clínicamente útil: la CIM es resistente." },
+            { id: "cefepima", nombre: "Cefepima · 4.ª", dano: 7, rebote: 13, presion: 13, toxicidad: 0, clase: "trampa", mensaje: "La CIM parece favorable, pero BLEE invasiva no es terreno seguro: respuesta inicial y rebote." },
+            { id: "piptazo", nombre: "Piperacilina-tazobactam", dano: 8, rebote: 14, presion: 14, toxicidad: 0, clase: "trampa", mensaje: "Sensible in vitro no significa óptimo en neumonía invasiva por BLEE: aparece rebote por carga/inóculo." },
+            { id: "ertapenem", nombre: "Ertapenem", dano: 28, presion: 7, toxicidad: 1, clase: "razonable", mensaje: "Activo y razonable en paciente estable; el caso premia meropenem durante la fase invasiva inicial." },
+            { id: "meropenem", nombre: "Meropenem", dano: 36, presion: 8, toxicidad: 1, clase: "optima", mensaje: "La carga desciende de forma consistente. En esta neumonía por BLEE, es el esquema preferente." },
+            { id: "cza", nombre: "Ceftazidima-avibactam", dano: 40, presion: 25, toxicidad: 2, clase: "exceso", mensaje: "Es activa, pero consume una herramienta de reserva sin necesidad microbiológica." },
+            { id: "mvb", nombre: "Meropenem-vaborbactam", dano: 42, presion: 28, toxicidad: 2, clase: "exceso", mensaje: "Golpea con fuerza, pero vaborbactam no aporta valor frente a una BLEE sin KPC." },
+            { id: "irl", nombre: "Imipenem-relebactam", dano: 42, presion: 28, toxicidad: 3, clase: "exceso", mensaje: "Activo, pero relebactam es una llave demasiado costosa para esta cerradura." },
+            { id: "cefiderocol", nombre: "Cefiderocol", dano: 44, presion: 32, toxicidad: 3, clase: "exceso", mensaje: "Activo in vitro; reservarlo evita quemar puentes terapéuticos futuros." },
+            { id: "atmcza", nombre: "Aztreonam + CZA", dano: 40, presion: 30, toxicidad: 4, clase: "exceso", mensaje: "Combinación activa, diseñada para otro problema: MBL con betalactamasas acompañantes." },
+            { id: "amikacina", nombre: "Amikacina", dano: 20, presion: 8, toxicidad: 18, clase: "toxicidad", mensaje: "Hay actividad, pero la monoterapia invasiva paga un precio nefro/ototóxico innecesario." },
+            { id: "fosfomicina", nombre: "Fosfomicina oral", dano: 0, presion: 3, toxicidad: 1, clase: "foco", mensaje: "La concentración urinaria no alcanza el parénquima pulmonar. El sitio manda." },
+            { id: "nitrofurantoina", nombre: "Nitrofurantoína", dano: 0, presion: 2, toxicidad: 1, clase: "foco", mensaje: "Solo sirve para cistitis: no alcanza el pulmón ni la sangre." },
+            { id: "polimixina", nombre: "Polimixina B / colistina", dano: 18, presion: 20, toxicidad: 28, clase: "toxicidad", mensaje: "La bacteria retrocede, pero el paciente recibe una tormenta nefro/neurotóxica evitable." }
+          ],
+          items: [
+            { id: "foco", nombre: "Analizar y controlar el foco", mensaje: "Análisis del foco: radiografía de control sin derrame ni cavitación. No existe un procedimiento que sustituya al antibiótico.", puntos: 5 },
+            { id: "cateter", nombre: "Retirar catéter", mensaje: "No existe un catéter implicado. Retirarlo por rutina sería una intervención sin blanco.", puntos: -3 },
+            { id: "pkpd", nombre: "Optimizar dosis y exposición", mensaje: "Se confirma función renal y se optimiza la exposición PK/PD de meropenem para alcanzar concentración pulmonar eficaz.", puntos: 15 },
+            { id: "aislamiento", nombre: "Aislamiento de contacto", mensaje: "Se aplican precauciones conforme a la política local y se corta una posible cadena de transmisión.", puntos: 3 }
+          ],
+          explicacionFinal: "K. pneumoniae productora de BLEE con variante {GEN}, en un foco pulmonar. La resistencia a ceftriaxona con carbapenémicos conservados sostiene el mismo mecanismo que en una bacteriemia: la enzima no cambia porque cambie el órgano. Piperacilina-tazobactam y cefepima siguen sin ser opciones preferentes pese a un laboratorio aparentemente tranquilizador; nitrofurantoína y fosfomicina oral no tienen papel en neumonía."
+        }]
       }, {
         id: "enterobacter_ampc",
         capitulo: "CAPÍTULO 2 · RESISTENCIA ADQUIRIDA",
@@ -2152,20 +2271,25 @@
       const formaForzada = plantilla.formas.find(function (forma) { return forma.id === formaIdForzada; });
       const forma = formaForzada || elegirAleatorio(candidatas.length > 0 ? candidatas : plantilla.formas);
       ultimaFormaPorEncuentro[plantilla.id] = forma.id;
+      // Cada campo admite que la forma lo redefina (para variar especie,
+      // viñeta clínica o foco entre formas) y cae de vuelta a la plantilla
+      // cuando la forma no lo declara — así el jefe CRE (cuyas formas solo
+      // cambian mecanismo/antibiograma) sigue comportándose exactamente
+      // igual que antes.
       return Object.assign({}, plantilla, forma, {
         id: plantilla.id + "__" + forma.id,
         idCampania: plantilla.id,
         formaId: forma.id,
         capitulo: plantilla.capitulo,
-        microorganismo: plantilla.microorganismo,
-        spriteId: plantilla.spriteId,
-        muestra: plantilla.muestra,
-        paciente: plantilla.paciente,
-        mecanismosSeleccionables: plantilla.mecanismosSeleccionables,
-        itemsRequeridosMercy: plantilla.itemsRequeridosMercy,
-        items: plantilla.items,
-        introduccion: plantilla.introduccion,
-        frasesAtaque: plantilla.frasesAtaque
+        microorganismo: forma.microorganismo || plantilla.microorganismo,
+        spriteId: forma.spriteId || plantilla.spriteId,
+        muestra: forma.muestra || plantilla.muestra,
+        paciente: forma.paciente || plantilla.paciente,
+        mecanismosSeleccionables: forma.mecanismosSeleccionables || plantilla.mecanismosSeleccionables,
+        itemsRequeridosMercy: forma.itemsRequeridosMercy || plantilla.itemsRequeridosMercy,
+        items: forma.items || plantilla.items,
+        introduccion: forma.introduccion || plantilla.introduccion,
+        frasesAtaque: forma.frasesAtaque || plantilla.frasesAtaque
       });
     }
 
