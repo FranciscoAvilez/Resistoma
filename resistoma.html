@@ -2286,8 +2286,21 @@
       contexto.fillRect(x + 3, y + 3, (ancho - 6) * limitar(valor, 0, 100) / 100, alto - 6);
     }
 
-    function registrarBoton(x, y, ancho, alto, etiqueta, accion, seleccionado, bloqueadoVisual) {
-      botonesActivos.push({ x: x, y: y, ancho: ancho, alto: alto, accion: accion });
+    function registrarBoton(x, y, ancho, alto, etiqueta, accion, seleccionado, bloqueadoVisual, valorSeleccion) {
+      // valorSeleccion: qué debe asignarse a estadoJuego.seleccion cuando el
+      // puntero pasa por encima (ver moverPuntero). Por defecto es la propia
+      // posición del botón dentro de botonesActivos, que coincidía con el
+      // índice de selección MIENTRAS todos los botones de una pantalla se
+      // registraran en el mismo orden que sus índices (así era en todas las
+      // pantallas... hasta que dibujarCampania() empezó a registrar botones
+      // "de acción" -el panel completo, "abrir expediente"- que no ocupan un
+      // lugar en el ciclo de flechas). Pasar un valor explícito evita que
+      // esos botones extra corran la numeración de los que sí lo ocupan.
+      const posicion = botonesActivos.length;
+      botonesActivos.push({
+        x: x, y: y, ancho: ancho, alto: alto, accion: accion,
+        valorSeleccion: valorSeleccion === undefined ? posicion : valorSeleccion
+      });
       contexto.fillStyle = seleccionado ? COLOR.sombra : COLOR.panel;
       contexto.fillRect(x, y, ancho, alto);
       const colorBorde = bloqueadoVisual ? COLOR.tenue : (seleccionado ? COLOR.fuerte : COLOR.medio);
@@ -2321,8 +2334,12 @@
     // en vez de una cuadrícula de cuadrados. Solo "navega" (cambia qué
     // expediente se previsualiza abajo); abrir el caso es una acción aparte
     // ("ABRIR EXPEDIENTE"), registrada con registrarBoton normal.
-    function registrarPestanaCarpeta(x, y, ancho, alto, numero, accion, seleccionado, bloqueado, colorEstado) {
-      botonesActivos.push({ x: x, y: y, ancho: ancho, alto: alto, accion: accion });
+    function registrarPestanaCarpeta(x, y, ancho, alto, numero, accion, seleccionado, bloqueado, colorEstado, valorSeleccion) {
+      const posicion = botonesActivos.length;
+      botonesActivos.push({
+        x: x, y: y, ancho: ancho, alto: alto, accion: accion,
+        valorSeleccion: valorSeleccion === undefined ? posicion : valorSeleccion
+      });
       const inset = Math.min(10, ancho / 6);
       const colorBorde = bloqueado ? COLOR.tenue : (seleccionado ? COLOR.fuerte : colorEstado);
       contexto.fillStyle = seleccionado ? COLOR.sombra : COLOR.panel;
@@ -4176,7 +4193,8 @@
           function () { estadoJuego.seleccion = indice; },
           estadoJuego.seleccion === indice,
           !desbloqueado,
-          colorEstado
+          colorEstado,
+          indice
         );
       });
 
@@ -4233,13 +4251,18 @@
         // llamado a la acción, pero ya no es el único punto donde funciona.
         botonesActivos.push({
           x: panelX, y: panelY, ancho: panelW, alto: panelH,
-          accion: function () { seleccionarEncuentroCampania(indiceExpediente); }
+          accion: function () { seleccionarEncuentroCampania(indiceExpediente); },
+          // Pasar el mouse por el panel no debe "mover" la selección a otro
+          // lugar: reafirma la pestaña que ya se está examinando.
+          valorSeleccion: indiceExpediente
         });
         registrarBoton(
           panelX + panelW - 246, panelY + panelH - 58, 222, 42,
           "ABRIR EXPEDIENTE →",
           function () { seleccionarEncuentroCampania(indiceExpediente); },
-          false
+          false,
+          false,
+          indiceExpediente
         );
       } else {
         dibujarTexto(encuentro.microorganismo, panelX + 24, panelY + 44, 24, COLOR.tenue);
@@ -4264,13 +4287,17 @@
         42, filaBotonesY, 636, 34,
         "MICROLEARNING · PRÁCTICA RÁPIDA (3-5 MIN) · CASO ALEATORIO YA DESBLOQUEADO",
         iniciarPracticaRapida,
-        estadoJuego.seleccion === indiceBotonPractica
+        estadoJuego.seleccion === indiceBotonPractica,
+        false,
+        indiceBotonPractica
       );
       registrarBoton(
         690, filaBotonesY, 224, 34,
         "⟲ REINICIAR PROGRESO",
         pedirConfirmacionReinicio,
-        estadoJuego.seleccion === indiceBotonReinicio
+        estadoJuego.seleccion === indiceBotonReinicio,
+        false,
+        indiceBotonReinicio
       );
 
       dibujarTexto(totalEncuentros + " expedientes · susceptible → MDR → CRE/XDR → no fermentadores", 42, filaBotonesY + 46, 10, COLOR.principal);
@@ -5293,12 +5320,18 @@
         actualizarObjetivoPuntero(punto);
         return;
       }
-      const indiceBoton = botonesActivos.findIndex(function (elemento) {
+      // Usa el valorSeleccion explícito de cada botón (ver registrarBoton),
+      // no su posición cruda en botonesActivos: dibujarCampania() registra
+      // botones "de acción" (el panel del expediente, ABRIR EXPEDIENTE) que
+      // no ocupan un lugar en el ciclo de flechas, y usar la posición del
+      // arreglo ahí hacía que pasar el mouse por el panel "seleccionara"
+      // otro botón (por ejemplo, microlearning) sin que el jugador lo pidiera.
+      const boton = botonesActivos.find(function (elemento) {
         return punto.x >= elemento.x && punto.x <= elemento.x + elemento.ancho &&
                punto.y >= elemento.y && punto.y <= elemento.y + elemento.alto;
       });
-      if (indiceBoton >= 0 && ["campania", "turno", "menu", "confirmar_tratamiento", "confirmar_reinicio", "confirmar_abandonar", "preataque"].includes(estadoJuego.pantalla)) {
-        estadoJuego.seleccion = indiceBoton;
+      if (boton && ["campania", "turno", "menu", "confirmar_tratamiento", "confirmar_reinicio", "confirmar_abandonar", "preataque"].includes(estadoJuego.pantalla)) {
+        estadoJuego.seleccion = boton.valorSeleccion;
       }
     }
 
