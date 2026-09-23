@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Juego educativo sobre inferencia fenotípica de resistencia antimicrobiana en Enterobacterales y no fermentadores.">
   <title>Resistoma: fenotipo antes que fármaco</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- VT323: fuente pixel/CRT genuina, usada en todo el texto del lienzo
+       (diálogo, menús, HUD). Press Start 2P: fuente de 8 bits más clásica
+       y ancha, reservada solo para textos cortos de gran impacto (título,
+       letra de rango) para no arriesgar desbordes en párrafos o listas. -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <style>
     :root {
       color-scheme: dark;
@@ -27,7 +34,7 @@
         linear-gradient(145deg, #07101d 0%, #101b2e 58%, #171426 100%),
         var(--fondo);
       color: var(--tinta);
-      font-family: "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
+      font-family: "VT323", "Cascadia Mono", Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
     body {
@@ -58,9 +65,16 @@
       min-width: 620px;
       height: auto;
       aspect-ratio: 16 / 10;
-      /* Los sprites ya se dibujan con rectángulos enteros. Evitar "pixelated"
-         impide que el navegador pixele también las letras del Canvas. */
-      image-rendering: auto;
+      /* El lienzo interno ya se redimensiona en JS (ajustarResolucionLienzo)
+         para igualar resolución física × devicePixelRatio, así que en el
+         caso normal el navegador no necesita reescalar nada: "pixelated" no
+         cambia cómo se ven ni los sprites ni el texto ahí. Es una red de
+         seguridad para el caso raro en que el tamaño CSS y el búfer no
+         coincidan por un instante (redimensionar la ventana, DPR
+         fraccionario): sin esto, ese desajuste se vería borroso en vez de
+         nítido. */
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
       touch-action: none;
     }
 
@@ -79,7 +93,10 @@
       gap: 16px;
       margin-top: 10px;
       color: var(--tinta-media);
-      font-size: clamp(10px, 1.4vw, 13px);
+      /* VT323 tiene una x-height baja: se lee más pequeña que una fuente
+         normal al mismo tamaño, así que el rango de tamaño sube un poco
+         respecto al que usaría una fuente convencional aquí. */
+      font-size: clamp(13px, 1.7vw, 16px);
       text-align: left;
     }
 
@@ -210,7 +227,7 @@
     }
 
     const MECANISMOS_TUTORIAL = [
-      { id: "FENOTIPO_BASAL", nombre: "Fenotipo basal · sin resistencia adquirida relevante" },
+      { id: "FENOTIPO_BASAL", nombre: "Fenotipo basal · sin resistencia adquirida" },
       { id: "BLEE", nombre: "BLEE (CTX-M/SHV/TEM)" },
       { id: "AmpC_inducible", nombre: "AmpC cromosómica inducible" },
       { id: "AmpC_plasmidica", nombre: "AmpC plasmídica" },
@@ -2220,6 +2237,11 @@
         seleccionPrevia: 0,
         reaccionBurlaHasta: 0,
         golpeHasta: 0,
+        // VFX de decisión clínica: temblor de pantalla al fallar (mecanismo
+        // o tratamiento incorrectos), ráfaga de partículas pixeladas al
+        // acertar. Puramente visuales, atenuados con prefers-reduced-motion.
+        temblorHasta: 0,
+        particulas: [],
         mecanismosDescartados: [],
         inicioEncuentroMs: performance.now()
       };
@@ -2238,8 +2260,20 @@
       contexto.fillRect(0, 0, ANCHO, ALTO);
     }
 
-    function dibujarTexto(texto, x, y, tamano, color, alineacion) {
-      contexto.font = "700 " + tamano + "px 'Cascadia Mono', Consolas, 'Liberation Mono', 'Courier New', monospace";
+    // VT323 es la fuente pixel/CRT "de trabajo" para todo el texto del
+    // lienzo (diálogo, menús, HUD, tablas): es monoespaciada, de un solo
+    // peso (no existe VT323 bold; forzarlo daría negrita sintética
+    // borrosa) y su métrica es más angosta que Cascadia Mono, así que
+    // reutiliza los mismos tamaños ya ajustados en cada pantalla sin
+    // arriesgar los desbordes que costó corregir. Press Start 2P (más
+    // ancha y auténticamente "8 bits") queda reservada, vía el parámetro
+    // pixelGrueso, a textos cortos de alto impacto -título, letra de
+    // rango- donde un ancho de carácter mayor no puede desbordar nada.
+    const PILA_FUENTE_PIXEL = "'VT323', 'Cascadia Mono', Consolas, monospace";
+    const PILA_FUENTE_TITULO = "'Press Start 2P', 'Cascadia Mono', monospace";
+
+    function dibujarTexto(texto, x, y, tamano, color, alineacion, pixelGrueso) {
+      contexto.font = tamano + "px " + (pixelGrueso ? PILA_FUENTE_TITULO : PILA_FUENTE_PIXEL);
       contexto.fillStyle = color || COLOR.principal;
       contexto.textAlign = alineacion || "left";
       contexto.textBaseline = "top";
@@ -2247,7 +2281,7 @@
     }
 
     function dividirTexto(texto, anchoMaximo, tamano) {
-      contexto.font = "700 " + tamano + "px 'Cascadia Mono', Consolas, 'Liberation Mono', 'Courier New', monospace";
+      contexto.font = tamano + "px " + PILA_FUENTE_PIXEL;
       const palabras = String(texto).split(" ");
       const lineas = [];
       let linea = "";
@@ -2278,6 +2312,20 @@
       contexto.strokeStyle = color || COLOR.principal;
       contexto.lineWidth = grosor || 2;
       contexto.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, ancho, alto);
+    }
+
+    // Marco doble: dos líneas del mismo color con un hueco angosto entre
+    // ellas, el recuadro "de diálogo" clásico de Undertale. Se reserva para
+    // las cajas principales de cada pantalla (diálogo, submenú, pantallas
+    // de confirmación); los elementos más pequeños dentro de ellas (tarjetas,
+    // botones, insignias) conservan el marco simple para no saturar la
+    // jerarquía visual.
+    function dibujarMarcoDoble(x, y, ancho, alto, color, grosorExterior, hueco) {
+      const colorFinal = color || COLOR.fuerte;
+      const g = grosorExterior || 3;
+      const h = hueco === undefined ? 5 : hueco;
+      dibujarMarco(x, y, ancho, alto, colorFinal, g);
+      dibujarMarco(x + g + h, y + g + h, ancho - 2 * (g + h), alto - 2 * (g + h), colorFinal, Math.max(1, g - 1));
     }
 
     function dibujarBarra(x, y, ancho, alto, valor, color) {
@@ -3194,6 +3242,8 @@
       const correcto = mecanismoId === CONTENIDO_CLINICO.encuentro.mecanismoReal;
       const eraPrimerAcierto = correcto && !estadoJuego.inferenciaLograda;
       estadoJuego.mecanismoCorrecto = correcto;
+      if (correcto) dispararParticulas(480, 150, COLOR.exito);
+      else dispararTemblor();
       estadoJuego.decisiones.push("Hipótesis declarada: " + mecanismoId + (correcto ? " (correcta)" : " (incorrecta)"));
 
       if (correcto) {
@@ -3260,6 +3310,8 @@
 
       const clasesConError = ["inactiva", "trampa", "exceso", "toxicidad", "foco"];
       const esTratamientoOptimoEnEsteMomento = antibiotico.clase === "optima" && !estadoJuego.evolucionada;
+      if (esTratamientoOptimoEnEsteMomento) dispararParticulas(480, 150, COLOR.exito);
+      else if (clasesConError.includes(antibiotico.clase)) dispararTemblor();
       if (!esTratamientoOptimoEnEsteMomento) {
         const penalizacionDeEstaEleccion = antibiotico.clase === "razonable" ? 5 : 10;
         estadoJuego.penalizacionTratamiento = limitar(
@@ -4169,8 +4221,8 @@
        ================================================================ */
 
     function dibujarCampania() {
-      dibujarTexto("RESISTOMA", 42, 28, 28, COLOR.fuerte);
-      dibujarTexto("CAMPAÑA CLÍNICA · ARCHIVO DE CASOS", 42, 62, 12, COLOR.medio);
+      dibujarTexto("RESISTOMA", 42, 28, 22, COLOR.fuerte, "left", true);
+      dibujarTexto("CAMPAÑA CLÍNICA · ARCHIVO DE CASOS", 42, 68, 14, COLOR.medio);
 
       const totalEncuentros = CONTENIDO_CLINICO.encuentros.length;
 
@@ -4223,7 +4275,7 @@
         dibujarTexto(encuentro.microorganismo, panelX + 24, panelY + 44, 24, COLOR.fuerte);
         dibujarTexto(encuentro.capitulo, panelX + 24, panelY + 78, 10, COLOR.tenue);
 
-        contexto.font = "700 12px 'Cascadia Mono', Consolas, 'Liberation Mono', 'Courier New', monospace";
+        contexto.font = "12px " + PILA_FUENTE_PIXEL;
         const anchoEtiquetaNivel = contexto.measureText(encuentro.nivelResistencia).width + 24;
         dibujarMarco(panelX + 24, panelY + 96, anchoEtiquetaNivel, 26, colorSeveridad, 2);
         dibujarTexto(encuentro.nivelResistencia, panelX + 36, panelY + 103, 12, colorSeveridad);
@@ -4323,10 +4375,10 @@
       // encima de este botón no debe mover la selección: la reafirma tal
       // cual está.
       registrarBoton(400, 6, 160, 24, "⟲ MENÚ / REINICIO", abrirConfirmacionAbandonar, false, false, estadoJuego.seleccion);
-      dibujarTexto("RESISTOMA", 28, 18, 23, COLOR.fuerte);
+      dibujarTexto("RESISTOMA", 28, 18, 15, COLOR.fuerte, "left", true);
       dibujarTexto(
         estadoJuego.modoPractica ? "PRÁCTICA RÁPIDA · MICROLEARNING" : "FENOTIPO ANTES QUE FÁRMACO",
-        28, 47, 11, estadoJuego.modoPractica ? COLOR.exito : COLOR.medio
+        28, 47, 13, estadoJuego.modoPractica ? COLOR.exito : COLOR.medio
       );
       dibujarTexto(CONTENIDO_CLINICO.encuentro.capitulo, 932, 20, 10, COLOR.principal, "right");
       dibujarTexto("ENCUENTRO " + (indiceEncuentroActual + 1) + "/" + CONTENIDO_CLINICO.encuentros.length + " · " + CONTENIDO_CLINICO.encuentro.nivelResistencia, 932, 43, 10, COLOR.medio, "right");
@@ -4368,7 +4420,7 @@
     }
 
     function dibujarDialogo() {
-      dibujarMarco(28, 273, 904, 205, COLOR.principal, 3);
+      dibujarMarcoDoble(28, 273, 904, 205, COLOR.fuerte, 3, 4);
       dibujarTexto("*", 48, 294, 22, COLOR.fuerte);
       dibujarTextoEnvuelto(estadoJuego.mensajeVisible, 78, 296, 820, 16, COLOR.fuerte, 24, 6);
       if (estadoJuego.indiceTexto >= estadoJuego.mensajeCompleto.length) {
@@ -4547,7 +4599,7 @@
     function dibujarSubmenu() {
       contexto.fillStyle = COLOR.fondo;
       contexto.fillRect(18, 76, 924, 510);
-      dibujarMarco(20, 78, 920, 500, COLOR.principal, 3);
+      dibujarMarcoDoble(20, 78, 920, 500, COLOR.fuerte, 3, 3);
       dibujarTexto(TITULOS_MENU[estadoJuego.menu] || estadoJuego.menu.toUpperCase(), 42, 96, 17, COLOR.fuerte);
       dibujarTexto("Selecciona con flechas o clic · ESC para volver", 918, 101, 10, COLOR.medio, "right");
 
@@ -4591,12 +4643,21 @@
       const opcionActiva = opciones[estadoJuego.seleccion];
       if (opcionActiva && opcionActiva.descripcion) {
         dibujarMarco(44, 543, 872, 26, COLOR.tenue, 1);
-        dibujarTexto("ⓘ " + opcionActiva.descripcion, 54, 550, 10, COLOR.medio);
+        // Es una sola línea sin salto: si la descripción del mecanismo o
+        // fármaco es demasiado larga (varían mucho entre catálogos), se
+        // trunca con "…" en vez de desbordar el marco.
+        contexto.font = "10px " + PILA_FUENTE_PIXEL;
+        let textoInfo = "ⓘ " + opcionActiva.descripcion;
+        const anchoDisponibleInfo = 852;
+        while (contexto.measureText(textoInfo).width > anchoDisponibleInfo && textoInfo.length > 4) {
+          textoInfo = textoInfo.slice(0, -2) + "…";
+        }
+        dibujarTexto(textoInfo, 54, 550, 10, COLOR.medio);
       }
     }
 
     function dibujarConfirmacionAbandonar() {
-      dibujarMarco(22, 22, 916, 556, COLOR.medio, 3);
+      dibujarMarcoDoble(22, 22, 916, 556, COLOR.medio, 3, 4);
       dibujarTexto("PAUSA", 48, 46, 22, COLOR.fuerte);
       dibujarTextoEnvuelto(
         CONTENIDO_CLINICO.encuentro.microorganismo + " · " + CONTENIDO_CLINICO.encuentro.nivelResistencia +
@@ -4609,7 +4670,7 @@
     }
 
     function dibujarConfirmacionReinicio() {
-      dibujarMarco(22, 22, 916, 556, COLOR.alerta, 3);
+      dibujarMarcoDoble(22, 22, 916, 556, COLOR.alerta, 3, 4);
       dibujarTexto("REINICIAR PROGRESO", 48, 46, 22, COLOR.alerta);
       dibujarTextoEnvuelto(
         "Esto borra, solo en este navegador, los encuentros desbloqueados y las mejores calificaciones. No se puede deshacer.",
@@ -4640,7 +4701,7 @@
 
       contexto.fillStyle = COLOR.fondo;
       contexto.fillRect(18, 76, 924, 510);
-      dibujarMarco(20, 78, 920, 500, COLOR.medio, 3);
+      dibujarMarcoDoble(20, 78, 920, 500, COLOR.medio, 3, 3);
       dibujarTexto("CONFIRMAR ADMINISTRACIÓN", 44, 99, 19, COLOR.fuerte);
       dibujarTexto("Una decisión clínica requiere confirmación; un clic aislado no administra.", 44, 134, 11, COLOR.medio);
 
@@ -4985,12 +5046,12 @@
       const resumen = estadoJuego.resumen;
       contexto.fillStyle = COLOR.fondo;
       contexto.fillRect(0, 0, ANCHO, ALTO);
-      dibujarMarco(22, 22, 916, 556, COLOR.principal, 3);
+      dibujarMarcoDoble(22, 22, 916, 556, resumen.victoria ? COLOR.exito : COLOR.alerta, 3, 4);
       const numeroCaso = resumen.indiceEncuentro + 1;
       dibujarTexto("ENCUENTRO " + numeroCaso + "/" + CONTENIDO_CLINICO.encuentros.length + (resumen.victoria ? " · RESUELTO" : " · PACIENTE DETERIORADO"), 48, 44, 22, COLOR.fuerte);
       dibujarTexto(resumen.microorganismo + " · " + resumen.nivelResistencia, 48, 75, 13, COLOR.principal);
       dibujarTexto("RANGO", 810, 47, 12, COLOR.medio, "center");
-      dibujarTexto(resumen.rango, 810, 65, 72, COLOR.fuerte, "center");
+      dibujarTexto(resumen.rango, 810, 68, 56, COLOR.fuerte, "center", true);
       dibujarTexto(resumen.total + "/100", 810, 141, 16, COLOR.principal, "center");
 
       dibujarTexto("MECANISMO REAL", 48, 104, 11, COLOR.medio);
@@ -5118,6 +5179,53 @@
       estadoJuego.cursorPulsoHasta = performance.now() + 140;
     }
 
+    // VFX de fallo: un temblor breve de toda la pantalla, la misma idea que
+    // ya usaba el impacto de balas pero aplicada a una decisión clínica
+    // equivocada (mecanismo o tratamiento). Ver dibujarJuego().
+    function dispararTemblor() {
+      estadoJuego.temblorHasta = performance.now() + 260 * factorMovimiento();
+    }
+
+    // VFX de acierto: una ráfaga corta de cuadritos pixelados que se alejan
+    // del punto (x, y) y se desvanecen. Nada de esto participa en hitboxes
+    // ni puntuación; es celebración visual pura.
+    function dispararParticulas(x, y, color, cantidad) {
+      if (Accesibilidad.movimientoReducido) return;
+      const total = cantidad || 12;
+      for (let i = 0; i < total; i += 1) {
+        const angulo = (Math.PI * 2 * i) / total + Math.random() * 0.4;
+        const velocidad = 90 + Math.random() * 110;
+        estadoJuego.particulas.push({
+          x: x, y: y,
+          vx: Math.cos(angulo) * velocidad,
+          vy: Math.sin(angulo) * velocidad,
+          vidaMs: 420 + Math.random() * 180,
+          edadMs: 0,
+          color: color || COLOR.exito,
+          tamano: 2 + Math.round(Math.random() * 2)
+        });
+      }
+    }
+
+    function actualizarYDibujarParticulas(delta) {
+      if (estadoJuego.particulas.length === 0) return;
+      const segundos = (delta || 16) / 1000;
+      estadoJuego.particulas = estadoJuego.particulas.filter(function (particula) {
+        particula.edadMs += delta || 16;
+        particula.x += particula.vx * segundos;
+        particula.y += particula.vy * segundos;
+        particula.vy += 140 * segundos; // leve gravedad, se sienten "pixeladas" y no un láser
+        return particula.edadMs < particula.vidaMs;
+      });
+      estadoJuego.particulas.forEach(function (particula) {
+        const vida = 1 - particula.edadMs / particula.vidaMs;
+        contexto.globalAlpha = Math.max(0, vida);
+        contexto.fillStyle = particula.color;
+        contexto.fillRect(Math.round(particula.x), Math.round(particula.y), particula.tamano, particula.tamano);
+      });
+      contexto.globalAlpha = 1;
+    }
+
     function dibujarJuego(delta) {
       botonesActivos = [];
       cursorMenuObjetivo = null;
@@ -5126,6 +5234,18 @@
         pantallaAnterior = estadoJuego.pantalla;
       }
       limpiarLienzo();
+
+      // Temblor de pantalla al fallar una decisión clínica (ver
+      // dispararTemblor): un jitter breve y pequeño de toda la escena, la
+      // misma técnica que ya usaba el impacto de balas pero aplicada aquí a
+      // cualquier pantalla, no solo a la arena.
+      const enTemblor = performance.now() < estadoJuego.temblorHasta;
+      const jitterTemblor = enTemblor ? (3 * factorMovimiento()) : 0;
+      contexto.save();
+      if (jitterTemblor) {
+        contexto.translate((Math.random() - 0.5) * jitterTemblor * 2, (Math.random() - 0.5) * jitterTemblor * 2);
+      }
+
       if (estadoJuego.pantalla === "campania") {
         dibujarCampania();
       } else if (estadoJuego.pantalla === "resumen") {
@@ -5153,7 +5273,9 @@
           dibujarMenuPrincipal();
         }
       }
+      actualizarYDibujarParticulas(delta);
       actualizarYDibujarCursorMenu(delta);
+      contexto.restore();
 
       if (fadeAlpha > 0) {
         contexto.globalAlpha = fadeAlpha;
