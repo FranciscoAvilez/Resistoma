@@ -3084,7 +3084,7 @@
       act: "LABORATORIO · PRUEBAS DISPONIBLES [ACT]",
       fight: "TRATAMIENTO · ELEGIR ESQUEMA [FIGHT]",
       item: "ANALIZAR CASO · FOCO, HUÉSPED Y EXPOSICIÓN [ITEM]",
-      diagnostico: "INFERIR MECANISMO · DECLARAR HIPÓTESIS [MERCY]"
+      diagnostico: "INFERIR MECANISMO · DECLARAR HIPÓTESIS [CIERRE]"
     };
 
     function abrirMenu(nombre) {
@@ -3421,7 +3421,7 @@
       estadoJuego.perdonada = true;
       estadoJuego.decisiones.push("Caso resuelto: mecanismo correcto, control de foco, tratamiento dirigido y exposición optimizada");
       mostrarMensajes([
-        "CASO RESUELTO · MERCY",
+        "CASO RESUELTO · CIERRE CLÍNICO",
         "La infección cede sin quemar una herramienta de reserva. El paciente conserva opciones para el futuro.",
         "No venciste por fuerza. Venciste porque leíste el fenotipo."
       ], function () { terminarEncuentro(true, true); });
@@ -4314,7 +4314,15 @@
     }
 
     function dibujarCabecera() {
-      registrarBoton(400, 6, 160, 24, "⟲ MENÚ / REINICIO", abrirConfirmacionAbandonar, false);
+      // Este botón se registra ANTES que los botones "reales" de cada
+      // pantalla (turno, menú, confirmar_tratamiento...), así que sin un
+      // valorSeleccion explícito ocupaba la posición 0 del arreglo y corría
+      // en +1 el índice de TODOS los que venían después: pasar el mouse
+      // sobre "LABORATORIO" (índice 0) terminaba seleccionando "CIERRE"
+      // (índice 1), etc. — el puntero parecía no seguir al mouse. Pasar por
+      // encima de este botón no debe mover la selección: la reafirma tal
+      // cual está.
+      registrarBoton(400, 6, 160, 24, "⟲ MENÚ / REINICIO", abrirConfirmacionAbandonar, false, false, estadoJuego.seleccion);
       dibujarTexto("RESISTOMA", 28, 18, 23, COLOR.fuerte);
       dibujarTexto(
         estadoJuego.modoPractica ? "PRÁCTICA RÁPIDA · MICROLEARNING" : "FENOTIPO ANTES QUE FÁRMACO",
@@ -4406,11 +4414,11 @@
     }
 
     function obtenerEtiquetaCierre() {
-      if (!estadoJuego.mecanismoCorrecto) return "INFERIR MECANISMO\nDECLARAR HIPÓTESIS · MERCY";
+      if (!estadoJuego.mecanismoCorrecto) return "INFERIR MECANISMO\nDECLARAR HIPÓTESIS · CIERRE";
       if (estadoJuego.tratamientoOptimo && medidasDelPacienteCompletas()) {
-        return "RESOLVER CASO\nCIERRE SIN SOBRETRATAR · MERCY";
+        return "RESOLVER CASO\nCIERRE SIN SOBRETRATAR";
       }
-      return "PLAN INCOMPLETO\nREVISAR Y COMPLETAR · MERCY";
+      return "PLAN INCOMPLETO\nREVISAR Y COMPLETAR · CIERRE";
     }
 
     function obtenerNombreMecanismoDeclarado() {
@@ -4448,7 +4456,7 @@
       ];
       nombres.forEach(function (nombre, indice) {
         const tratamientoBloqueado = indice === 2 && !estadoJuego.mecanismoDeclarado;
-        registrarBoton(28 + indice * 226, 510, 208, 58, nombre, acciones[indice], estadoJuego.seleccion === indice, tratamientoBloqueado);
+        registrarBoton(28 + indice * 226, 510, 208, 58, nombre, acciones[indice], estadoJuego.seleccion === indice, tratamientoBloqueado, indice);
       });
       dibujarTexto("Diagnóstico: " + obtenerNombreMecanismoDeclarado(), 30, 580, 10, estadoJuego.mecanismoCorrecto ? COLOR.fuerte : COLOR.medio);
       dibujarTexto("Turno " + estadoJuego.turno, 930, 580, 10, COLOR.medio, "right");
@@ -4546,12 +4554,20 @@
       const opciones = obtenerOpcionesMenu();
       const columnas = estadoJuego.menu === "fight" ? 3 : 2;
       const anchoBoton = columnas === 3 ? 276 : 412;
-      const altoBoton = estadoJuego.menu === "fight" ? 54 : 58;
       const inicioX = 44;
       const inicioY = 145;
       const separacionX = columnas === 3 ? 294 : 438;
-      const separacionY = estadoJuego.menu === "fight" ? 64 : 70;
-      const filas = Math.ceil(opciones.length / columnas);
+      const filas = Math.max(1, Math.ceil(opciones.length / columnas));
+      // La altura y separación de fila se calculan a partir del espacio
+      // vertical realmente disponible (hasta la barra de descripción, justo
+      // antes de y=543) en vez de una constante fija: con pocas filas se usa
+      // el espaciado cómodo de siempre (tope 70px), pero si un catálogo
+      // crece (como el de tratamientos, hoy 23 fármacos en 8 filas) el
+      // espaciado se encoge para que la última fila jamás se salga del
+      // lienzo, sin tener que volver a tocar este número a mano cada vez.
+      const espacioVertical = 543 - inicioY;
+      const separacionY = Math.min(70, espacioVertical / filas);
+      const altoBoton = Math.max(34, separacionY - 8);
 
       opciones.forEach(function (opcion, indice) {
         const columna = Math.floor(indice / filas);
@@ -4565,7 +4581,8 @@
           marca ? opcion.nombre + "\n" + marca : opcion.nombre,
           opcion.accion,
           estadoJuego.seleccion === indice,
-          !!opcion.usado
+          !!opcion.usado,
+          indice
         );
       });
 
@@ -4636,8 +4653,8 @@
       dibujarTexto(antibiotico.nombre, 68, 349, 18, COLOR.principal);
 
       dibujarTexto("¿ADMINISTRAR ESTE ESQUEMA?", 480, 416, 14, COLOR.fuerte, "center");
-      registrarBoton(210, 458, 250, 54, "ADMINISTRAR\nAPLICAR CONSECUENCIAS", administrarAntibioticoConfirmado, estadoJuego.seleccion === 0);
-      registrarBoton(500, 458, 250, 54, "VOLVER\nREVISAR OPCIONES", volverMenuTratamiento, estadoJuego.seleccion === 1);
+      registrarBoton(210, 458, 250, 54, "ADMINISTRAR\nAPLICAR CONSECUENCIAS", administrarAntibioticoConfirmado, estadoJuego.seleccion === 0, false, 0);
+      registrarBoton(500, 458, 250, 54, "VOLVER\nREVISAR OPCIONES", volverMenuTratamiento, estadoJuego.seleccion === 1, false, 1);
     }
 
     function dibujarAntibiograma() {
@@ -4915,7 +4932,7 @@
       dibujarTextoEnvuelto(estadoJuego.fraseAtaque, 52, 321, 850, 19, COLOR.fuerte, 25, 2);
       dibujarTexto("La bacteria ataca al organismo. La presión, la toxicidad y los errores determinan la intensidad.", 52, 374, 11, COLOR.medio);
       dibujarTexto(describirPatronAtaque(estadoJuego.patronPendiente), 52, 397, 10, COLOR.tenue);
-      registrarBoton(300, 426, 360, 38, "INICIAR DEFENSA DEL PACIENTE", comenzarAtaque, true);
+      registrarBoton(300, 426, 360, 38, "INICIAR DEFENSA DEL PACIENTE", comenzarAtaque, true, false, 0);
     }
 
     function dibujarFaseBalas() {
@@ -5315,8 +5332,15 @@
 
     function moverPuntero(evento) {
       const punto = obtenerCoordenadasLienzo(evento);
-      if (estadoJuego.pantalla === "balas" && estadoJuego.punteroPresionado) {
+      // Con mouse, el corazón sigue el puntero con solo pasar por encima
+      // (sin necesidad de mantener presionado): es lo que la mayoría espera
+      // de un juego así. El táctil no tiene "hover" real, así que ahí se
+      // mantiene el arrastre (requiere estadoJuego.punteroPresionado, que
+      // procesarPuntero solo activa con un toque/clic real).
+      const siguiendoConMouse = evento.pointerType === "mouse" && puntoDentroDeArena(punto);
+      if (estadoJuego.pantalla === "balas" && (estadoJuego.punteroPresionado || siguiendoConMouse)) {
         evento.preventDefault();
+        estadoJuego.punteroActivo = true;
         actualizarObjetivoPuntero(punto);
         return;
       }
