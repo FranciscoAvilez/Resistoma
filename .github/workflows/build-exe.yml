@@ -1,0 +1,30 @@
+name: Construir .exe calculadora pediátrica
+
+on:
+  push:
+    paths:
+      - "calculadora_liquidos_pediatria/**"
+      - ".github/workflows/build-exe.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: calculadora_liquidos_pediatria
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pruebas de cálculo
+        run: python -m unittest -v test_calculos
+      - name: Instalar PyInstaller
+        run: python -m pip install pyinstaller
+      - name: Construir .exe
+        run: python -m PyInstaller --onefile --windowed --name CalculadoraSolucionesPediatricas app.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CalculadoraSolucionesPediatricas-windows
+          path: calculadora_liquidos_pediatria/dist/CalculadoraSolucionesPediatricas.exe
