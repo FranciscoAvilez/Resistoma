@@ -20,8 +20,8 @@ Aplicación de escritorio (Windows `.exe`) para calcular líquidos IV de manteni
    - El volumen de los concentrados se resta de la solución base para que el total sea exactamente el prescrito.
 
 El resultado se recalcula al instante y muestra:
-- volumen en 24 h, mL/h, volumen por turno de 8 h, microgotas y macrogotas;
-- mL de cada componente en 24 h y por turno;
+- volumen en 24 h, mL/h, volumen por rol, microgotas y macrogotas;
+- mL de cada componente en 24 h y por rol;
 - mEq totales en mEq/kg, mEq/m² y mEq/L;
 - % de glucosa, carga de glucosa (mg/kg/min) y osmolaridad;
 - advertencias.
