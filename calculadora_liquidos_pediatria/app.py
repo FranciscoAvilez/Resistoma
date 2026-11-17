@@ -8,7 +8,7 @@ Generar .exe (Windows):  build_exe.bat
 import tkinter as tk
 from tkinter import ttk
 
-from calculos import Electrolito, Entrada, calcular, goteo
+from calculos import FUENTES, ROLES, Electrolito, Entrada, calcular, componentes_agrupados, goteo, hoja_rol
 
 TITULO = "Calculadora de Soluciones Pediátricas"
 
@@ -21,8 +21,7 @@ DEFAULTS_ELEC = {
     "Ca": (False, "mg/kg/día", "100"),
     "Mg": (False, "mg/kg/día", "25"),
 }
-NOMBRES_ELEC = {"Na": "Sodio (NaCl 17.7%)", "K": "Potasio (KCl 14.9%)",
-                "Ca": "Calcio (Gluc. Ca 10%)", "Mg": "Magnesio (MgSO4 10%)"}
+NOMBRES_ELEC = {"Na": "Sodio", "K": "Potasio", "Ca": "Calcio", "Mg": "Magnesio"}
 MODOS_ELEC = {
     "Na": ["mEq/kg/día", "mEq/m²SC/día", "mEq/L"],
     "K": ["mEq/kg/día", "mEq/m²SC/día", "mEq/L"],
@@ -40,7 +39,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title(TITULO)
-        self.geometry("1100x740")
+        self.geometry("1240x780")
         self.minsize(900, 600)
         style = ttk.Style(self)
         if "clam" in style.theme_names():
@@ -60,6 +59,7 @@ class App(tk.Tk):
             "base": tk.StringVar(value="NaCl 0.9%"),
             "glucosa": tk.StringVar(value="5"),
             "descontar": tk.BooleanVar(value=True),
+            "rol": tk.StringVar(value="8"),
         }
         self.elec_vars = {}
         self._construir()
@@ -131,6 +131,12 @@ class App(tk.Tk):
         for i, rb in enumerate(self.rb_glu):
             rb.grid(row=4, column=1 + i, sticky="w")
 
+        ttk.Label(f, text="Rol:").grid(row=5, column=0, sticky="w", pady=(4, 0))
+        rf = ttk.Frame(f)
+        rf.grid(row=5, column=1, columnspan=3, sticky="w", pady=(4, 0))
+        for h in ROLES:
+            ttk.Radiobutton(rf, text=f"{h} h", value=str(h), variable=self.v["rol"]).pack(side="left", padx=(0, 6))
+
         # 5. Electrolitos
         f = ttk.LabelFrame(izq, text="5. Electrolitos", padding=6)
         f.pack(fill="x", pady=3)
@@ -139,17 +145,24 @@ class App(tk.Tk):
             va = tk.BooleanVar(value=act)
             vm = tk.StringVar(value=modo)
             vv = tk.StringVar(value=val)
+            vf = tk.StringVar(value=FUENTES[ion][0]["nombre"])
             ttk.Checkbutton(f, text=NOMBRES_ELEC[ion], variable=va).grid(row=i, column=0, sticky="w")
             ttk.Entry(f, textvariable=vv, width=6).grid(row=i, column=1, padx=3)
             ttk.Combobox(f, textvariable=vm, values=MODOS_ELEC[ion], state="readonly",
                          width=13).grid(row=i, column=2)
-            for var in (va, vm, vv):
+            nombres = [x["nombre"] for x in FUENTES[ion]]
+            if len(nombres) > 1:
+                ttk.Combobox(f, textvariable=vf, values=nombres, state="readonly",
+                             width=24).grid(row=i, column=3, padx=(3, 0))
+            else:
+                ttk.Label(f, text=nombres[0], foreground="gray").grid(row=i, column=3, sticky="w", padx=(3, 0))
+            for var in (va, vm, vv, vf):
                 var.trace_add("write", lambda *_: self.recalcular())
-            self.elec_vars[ion] = (va, vm, vv)
+            self.elec_vars[ion] = (va, vm, vv, vf)
         ttk.Checkbutton(f, text="Descontar lo que ya aporta la solución base",
-                        variable=self.v["descontar"]).grid(row=4, column=0, columnspan=3, sticky="w", pady=(4, 0))
+                        variable=self.v["descontar"]).grid(row=4, column=0, columnspan=4, sticky="w", pady=(4, 0))
 
-        ttk.Label(izq, text=AVISO, foreground="#7a4b00", wraplength=380,
+        ttk.Label(izq, text=AVISO, foreground="#7a4b00", wraplength=520,
                   font=("Segoe UI", 8)).pack(fill="x", pady=(6, 0))
 
         # Resultados
@@ -168,15 +181,18 @@ class App(tk.Tk):
         self.txt.tag_configure("warn", foreground="#b00020")
         self.txt.tag_configure("err", foreground="#b00020", font=("Segoe UI", 11, "bold"))
         self.txt.tag_configure("gris", foreground="gray")
-        ttk.Button(der, text="Copiar indicación", command=self.copiar).grid(row=1, column=0, sticky="e", pady=(6, 0))
+        self.txt.tag_configure("hoja", font=("Consolas", 10, "bold"), background="#eef4f8",
+                               lmargin1=6, lmargin2=6, spacing1=1)
+        ttk.Button(der, text="Copiar hoja de indicación", command=self.copiar).grid(row=1, column=0, sticky="e", pady=(6, 0))
 
     # --------------------------------------------------------------- lógica
     def _entrada(self) -> Entrada:
         peso = _num(self.v["peso"].get())
         if peso is None:
             raise ValueError("Capture el peso en kg para comenzar.")
-        elec = {}
-        for ion, (va, vm, vv) in self.elec_vars.items():
+        elec, fuentes = {}, {}
+        for ion, (va, vm, vv, vf) in self.elec_vars.items():
+            fuentes[ion] = vf.get()
             try:
                 valor = _num(vv.get()) or 0.0
             except ValueError:
@@ -194,6 +210,8 @@ class App(tk.Tk):
             base=self.v["base"].get(),
             glucosa_pct=int(self.v["glucosa"].get()),
             descontar_base=self.v["descontar"].get(),
+            fuentes=fuentes,
+            rol_h=int(self.v["rol"].get()),
             electrolitos=elec,
         )
 
@@ -220,6 +238,10 @@ class App(tk.Tk):
 
     def _mostrar(self, ent: Entrada, r):
         w = self.txt.insert
+        h = ent.rol_h
+        self.indicacion = hoja_rol(ent, r)
+        w("end", "Hoja de indicación\n", "h")
+        w("end", self.indicacion + "\n", "hoja")
         w("end", "Volumen\n", "h")
         metodo = (f"Holliday-Segar" if ent.metodo != "SC" else f"SC × {ent.ml_m2:g} mL/m²")
         w("end", f"SC: {r.sc:.2f} m²  ({r.sc_formula})\n")
@@ -229,16 +251,14 @@ class App(tk.Tk):
         w("end", f"Ajuste: {ent.porcentaje:.0f}%\n")
         w("end", f"TOTAL: {r.vol_total:.0f} mL/día   =   {r.ml_h:.1f} mL/h\n", "big")
         g = goteo(r.ml_h)
-        w("end", f"{r.vol_total/3:.0f} mL por turno de 8 h  |  {g['micro']:.0f} microgotas/min"
+        w("end", f"{r.vol_total*h/24:.0f} mL por rol de {h} h  |  {g['micro']:.0f} microgotas/min"
                  f"  |  {g['macro']:.0f} gotas/min (macro)\n")
         w("end", f"{r.vol_total/ent.peso_kg:.0f} mL/kg/día   |   {r.vol_total/r.sc:.0f} mL/m²SC/día\n", "gris")
 
         w("end", "Preparación\n", "h")
-        w("end", f"{'Componente':<42}{'24 h':>9}{'Turno 8 h':>12}\n", "gris")
-        lineas = []
-        for nombre, ml in r.componentes:
-            w("end", f"{nombre:<42}{ml:>7.1f} mL{ml/3:>9.1f} mL\n")
-            lineas.append(f"{nombre} {ml:.1f} mL")
+        w("end", f"{'Componente':<42}{'24 h':>9}{'Rol ' + str(h) + ' h':>12}\n", "gris")
+        for nombre, ml, _ in componentes_agrupados(r):
+            w("end", f"{nombre:<42}{ml:>7.1f} mL{ml*h/24:>9.1f} mL\n")
 
         w("end", "Aporte de electrolitos\n", "h")
         w("end", f"{'Ion':<4}{'mEq/día':>9}{'mEq/kg':>9}{'mEq/m²':>9}{'mEq/L':>8}{'agregado':>11}\n", "gris")
@@ -257,12 +277,6 @@ class App(tk.Tk):
             for a in r.advertencias:
                 w("end", f"• {a}\n", "warn")
 
-        sol = "Solución mixta" if ent.solucion == "Mixta" else f"Solución {ent.solucion}"
-        self.indicacion = (
-            f"{sol}: {r.vol_total:.0f} mL para 24 h ({ent.porcentaje:.0f}% de mantenimiento), "
-            f"{r.ml_h:.1f} mL/h. Preparar: " + ", ".join(lineas) +
-            f". Peso {ent.peso_kg:g} kg, SC {r.sc:.2f} m²."
-        )
 
     def copiar(self):
         if getattr(self, "indicacion", ""):

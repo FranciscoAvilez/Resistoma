@@ -39,17 +39,35 @@ GLUCOSADAS = {
 # Solución mixta = glucosa 5 % en cloruro de sodio 0.9 %
 MIXTA = {"glucosa": 50.0, "Na": 154.0, "K": 0.0, "Cl": 154.0, "Ca": 0.0, "osm": 560.0}
 
-# Concentrados para agregar (por mL)
-CONCENTRADOS = {
-    "Na": {"nombre": "NaCl 17.7%", "meq_ml": 3.0, "osm_ml": 6.0},
-    "K": {"nombre": "KCl 14.9%", "meq_ml": 2.0, "osm_ml": 4.0},
+# Fuentes para agregar cada ion (por mL). La primera de cada lista es la
+# predeterminada. "corto" es el nombre que aparece en la hoja de indicación.
+FUENTES = {
+    "Na": [
+        {"nombre": "Concentrado de sodio 17.7%", "meq_ml": 3.0, "osm_ml": 6.0},
+        {"nombre": "Cloruro de sodio 0.9%", "meq_ml": 0.154, "osm_ml": 0.308},
+    ],
+    "K": [
+        {"nombre": "Cloruro de potasio 20 mEq/5 ml", "meq_ml": 4.0, "osm_ml": 8.0},
+        {"nombre": "Cloruro de potasio 14.9% (20 mEq/10 ml)", "meq_ml": 2.0, "osm_ml": 4.0},
+    ],
     # Gluconato de calcio 10 %: 100 mg/mL = 0.465 mEq/mL de Ca
-    "Ca": {"nombre": "Gluconato de calcio 10%", "meq_ml": 0.465, "osm_ml": 0.68, "mg_ml": 100.0},
+    "Ca": [{"nombre": "Gluconato de calcio 10%", "meq_ml": 0.465, "osm_ml": 0.68, "mg_ml": 100.0}],
     # Sulfato de magnesio 10 %: 100 mg/mL = 0.81 mEq/mL de Mg
-    "Mg": {"nombre": "Sulfato de magnesio 10%", "meq_ml": 0.81, "osm_ml": 0.81, "mg_ml": 100.0},
+    "Mg": [{"nombre": "Sulfato de magnesio 10%", "meq_ml": 0.81, "osm_ml": 0.81, "mg_ml": 100.0}],
 }
 
+
+def fuente(ion: str, nombre: str | None = None) -> dict:
+    for f in FUENTES[ion]:
+        if nombre is None or f["nombre"] == nombre:
+            return f
+    raise ValueError(f"Presentación desconocida para {ion}: {nombre}")
+
+
+ROLES = (24, 12, 8, 6)
+
 MODOS = ("mEq/kg/día", "mEq/m²SC/día", "mEq/L", "mg/kg/día")
+CORTO = {"mEq/kg/día": "mEq/kg/d", "mEq/m²SC/día": "mEq/m²SC/d", "mEq/L": "mEq/L", "mg/kg/día": "mg/kg/d"}
 
 # Rangos de referencia de mantenimiento (orientativos)
 RANGOS = {
@@ -104,11 +122,14 @@ class Entrada:
     base: str = "NaCl 0.9%"                  # o "Hartmann" (para 1:1 y 2:1)
     glucosa_pct: int = 5                     # 5, 10, 50
     descontar_base: bool = True
+    fuentes: dict[str, str] = field(default_factory=dict)  # ion -> nombre de presentación
+    rol_h: int = 24
     electrolitos: dict[str, Electrolito] = field(default_factory=dict)
 
 
 @dataclass
 class Resultado:
+    notas: dict[str, str] = field(default_factory=dict)  # nombre -> texto entre paréntesis
     sc: float = 0.0
     sc_formula: str = ""
     vol_calculado: float = 0.0
@@ -126,7 +147,7 @@ class Resultado:
     advertencias: list[str] = field(default_factory=list)
 
 
-def _meq_meta(e: Electrolito, ion: str, peso: float, sc: float, vol_ml: float) -> float:
+def _meq_meta(e: Electrolito, ion: str, peso: float, sc: float, vol_ml: float, c: dict) -> float:
     if e.modo == "mEq/kg/día":
         return e.valor * peso
     if e.modo == "mEq/m²SC/día":
@@ -134,7 +155,6 @@ def _meq_meta(e: Electrolito, ion: str, peso: float, sc: float, vol_ml: float) -
     if e.modo == "mEq/L":
         return e.valor * vol_ml / 1000.0
     if e.modo == "mg/kg/día":
-        c = CONCENTRADOS[ion]
         if "mg_ml" not in c:
             raise ValueError(f"mg/kg/día no aplica para {ion}")
         ml = e.valor * peso / c["mg_ml"]
@@ -149,7 +169,7 @@ def _fracciones(ent: Entrada) -> list[tuple[str, dict, float]]:
     base = SOLUCIONES_BASE[ent.base]
     glu = GLUCOSADAS[ent.glucosa_pct]
     glu_comp = {"glucosa": glu["glucosa"], "Na": 0, "K": 0, "Cl": 0, "Ca": 0, "osm": glu["osm"]}
-    nombre_base = "Solución Hartmann" if ent.base == "Hartmann" else "Solución salina 0.9%"
+    nombre_base = "Solución Hartmann" if ent.base == "Hartmann" else "Cloruro de sodio 0.9%"
     nombre_glu = f"Solución glucosada {ent.glucosa_pct}%"
     if ent.solucion == "1:1":
         return [(nombre_glu, glu_comp, 0.5), (nombre_base, base, 0.5)]
@@ -191,7 +211,8 @@ def calcular(ent: Entrada) -> Resultado:
     #    base para que el total sea exactamente el prescrito. Iteración de
     #    punto fijo (converge en pocas vueltas porque los volúmenes son chicos).
     elec = {k: v for k, v in ent.electrolitos.items() if v.activo and v.valor > 0}
-    metas = {ion: _meq_meta(e, ion, peso, r.sc, V) for ion, e in elec.items()}
+    conc = {ion: fuente(ion, ent.fuentes.get(ion)) for ion in FUENTES}
+    metas = {ion: _meq_meta(e, ion, peso, r.sc, V, conc[ion]) for ion, e in elec.items()}
     vol_aditivos = 0.0
     agregar: dict[str, float] = {}
     for _ in range(50):
@@ -201,22 +222,26 @@ def calcular(ent: Entrada) -> Resultado:
             aporte_base = sum(comp.get(ion, 0) * f * vol_base / 1000 for _, comp, f in fracs)
             falta = meta - aporte_base if ent.descontar_base else meta
             agregar[ion] = max(falta, 0.0)
-        nuevo = sum(m / CONCENTRADOS[i]["meq_ml"] for i, m in agregar.items())
+        nuevo = sum(m / conc[i]["meq_ml"] for i, m in agregar.items())
         if abs(nuevo - vol_aditivos) < 1e-9:
             break
         vol_aditivos = nuevo
     vol_base = max(V - vol_aditivos, 0.0)
-    if vol_aditivos > V * 0.5:
-        raise ValueError("El volumen de electrolitos excede la mitad del total; revise las dosis")
+    if vol_aditivos >= V:
+        raise ValueError("Los electrolitos no caben en el volumen total; revise las dosis "
+                         "o use una presentación más concentrada")
 
     # 5. Componentes y composición final
     glucosa_g = 0.0
     osm_total = 0.0
     totales = {"Na": 0.0, "K": 0.0, "Ca": 0.0, "Mg": 0.0}
     base_aporte = {"Na": 0.0, "K": 0.0, "Ca": 0.0, "Mg": 0.0}
+    r.notas = {}
     for nombre, comp, f in fracs:
         ml = vol_base * f
         r.componentes.append((nombre, ml))
+        if comp["glucosa"] > 0:
+            r.notas[nombre] = "GKM"
         glucosa_g += comp["glucosa"] * ml / 1000
         osm_total += comp["osm"] * ml / 1000
         for ion in ("Na", "K", "Ca"):
@@ -224,10 +249,12 @@ def calcular(ent: Entrada) -> Resultado:
     for ion in totales:
         totales[ion] = base_aporte[ion]
     for ion, meq in agregar.items():
-        c = CONCENTRADOS[ion]
+        c = conc[ion]
         ml = meq / c["meq_ml"]
         if ml > 0:
             r.componentes.append((c["nombre"], ml))
+            e = elec[ion]
+            r.notas[c["nombre"]] = f"{e.valor:g} {CORTO[e.modo]}"
         osm_total += ml * c["osm_ml"]
         totales[ion] += meq
 
@@ -249,7 +276,7 @@ def calcular(ent: Entrada) -> Resultado:
             "por_l": tot / V * 1000 if V else 0,
         }
         if ion in ("Ca", "Mg"):
-            d["mg_kg"] = (tot / CONCENTRADOS[ion]["meq_ml"]) * CONCENTRADOS[ion]["mg_ml"] / peso
+            d["mg_kg"] = (tot / conc[ion]["meq_ml"]) * conc[ion]["mg_ml"] / peso
         r.aportes[ion] = d
     r.na_meq_l = totales["Na"] / V * 1000 if V else 0
 
@@ -272,6 +299,11 @@ def calcular(ent: Entrada) -> Resultado:
         adv.append(f"Osmolaridad {r.osm:.0f} mOsm/L: riesgo de flebitis por vía periférica.")
     if r.glucosa_pct_final > 12.5:
         adv.append(f"Glucosa final {r.glucosa_pct_final:.1f}%: > 12.5% requiere vía central.")
+    if 0 < r.gkm < 2:
+        adv.append(f"Carga de glucosa baja ({r.gkm:.1f} mg/kg/min): vigile glucemia "
+                   "(la salina desplaza a la glucosada).")
+    elif r.glucosa_g == 0:
+        adv.append("La solución no aporta glucosa.")
     if r.gkm > 8:
         adv.append(f"Carga de glucosa {r.gkm:.1f} mg/kg/min elevada para mantenimiento.")
     if "K" in r.aportes:
@@ -291,6 +323,51 @@ def calcular(ent: Entrada) -> Resultado:
             adv.append(f"{ion}: la solución base ya aporta más de la meta "
                        f"({d['base']:.1f} vs {d['meta']:.1f} mEq/día).")
     return r
+
+
+def componentes_agrupados(r: Resultado) -> list[tuple[str, float, str]]:
+    """Une renglones con el mismo nombre (p. ej. NaCl 0.9 % de base + NaCl 0.9 % como fuente de Na)."""
+    orden: list[str] = []
+    vol: dict[str, float] = {}
+    for nombre, ml in r.componentes:
+        if nombre not in vol:
+            orden.append(nombre)
+            vol[nombre] = 0.0
+        vol[nombre] += ml
+    out = []
+    for n in orden:
+        nota = r.notas.get(n, "")
+        if nota == "GKM":
+            nota = f"GKM {r.gkm:.1f}"
+        out.append((n, vol[n], nota))
+    return out
+
+
+def hoja_rol(ent: Entrada, r: Resultado, numero: str = "") -> str:
+    """Texto de indicación por rol, en el formato de la hoja de soluciones."""
+    h = ent.rol_h
+    if ent.metodo == "SC":
+        base = f"{ent.ml_m2:g} ml/m2sc/día"
+    else:
+        base = f"Holliday-Segar ({r.vol_calculado / ent.peso_kg:.0f} ml/kg/día)"
+    if ent.porcentaje != 100:
+        base += f" al {ent.porcentaje:.0f}%"
+    periodo = "24 horas" if h == 24 else f"rol de {h} horas"
+    factor = h / 24.0
+    pref = f"{numero} " if numero else ""
+    lineas = [
+        f"{pref}Soluciones calculadas a {base} para {periodo}:",
+        f"   Volumen total: {r.vol_total * factor:.0f} ml     Velocidad de infusión: {r.ml_h:.1f} ml/hr.",
+        "",
+    ]
+    ancho = 44
+    for nombre, ml, nota in componentes_agrupados(r):
+        puntos = "." * max(3, ancho - len(nombre))
+        linea = f"{nombre}{puntos} {ml * factor:6.1f} ml"
+        if nota:
+            linea += f" ({nota})"
+        lineas.append(linea)
+    return "\n".join(lineas)
 
 
 def goteo(ml_h: float) -> dict[str, float]:

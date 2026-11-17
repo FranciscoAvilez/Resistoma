@@ -1,6 +1,6 @@
 import unittest
 
-from calculos import Electrolito, Entrada, calcular, holliday_segar, superficie_corporal
+from calculos import Electrolito, Entrada, calcular, hoja_rol, holliday_segar, superficie_corporal
 
 
 class TestVolumen(unittest.TestCase):
@@ -41,7 +41,7 @@ class TestSoluciones(unittest.TestCase):
         r = calcular(Entrada(peso_kg=10, solucion="1:1"))
         vols = dict(r.componentes)
         self.assertAlmostEqual(vols["Solución glucosada 5%"], 500)
-        self.assertAlmostEqual(vols["Solución salina 0.9%"], 500)
+        self.assertAlmostEqual(vols["Cloruro de sodio 0.9%"], 500)
         self.assertAlmostEqual(r.na_meq_l, 77)
 
     def test_2_1_hartmann_d10(self):
@@ -59,7 +59,10 @@ class TestElectrolitos(unittest.TestCase):
         self.assertAlmostEqual(r.vol_total, 1000)
         self.assertAlmostEqual(sum(v for _, v in r.componentes), 1000)
         self.assertAlmostEqual(r.aportes["K"]["total"], 20, places=6)
-        self.assertAlmostEqual(dict(r.componentes)["KCl 14.9%"], 10, places=6)
+        self.assertAlmostEqual(dict(r.componentes)["Cloruro de potasio 20 mEq/5 ml"], 5, places=6)
+        ent.fuentes = {"K": "Cloruro de potasio 14.9% (20 mEq/10 ml)"}
+        r = calcular(ent)
+        self.assertAlmostEqual(dict(r.componentes)["Cloruro de potasio 14.9% (20 mEq/10 ml)"], 10, places=6)
 
     def test_na_descuenta_base(self):
         # 1:1 salina aporta 77 mEq/L; meta 3 mEq/kg en 10 kg = 30 mEq < 77 => nada que agregar
@@ -84,6 +87,31 @@ class TestElectrolitos(unittest.TestCase):
     def test_advertencia_osm_d50(self):
         r = calcular(Entrada(peso_kg=10, solucion="1:1", glucosa_pct=50))
         self.assertTrue(any("central" in a for a in r.advertencias))
+
+
+class TestFuentesYRol(unittest.TestCase):
+    def test_na_con_salina_09(self):
+        # Glucosada 5 % sola (2:1 sin descontar no aplica); usar 2:1 y meta alta de Na
+        ent = Entrada(peso_kg=10, solucion="2:1", fuentes={"Na": "Cloruro de sodio 0.9%"},
+                      electrolitos={"Na": Electrolito(True, "mEq/kg/día", 8)})
+        r = calcular(ent)
+        self.assertAlmostEqual(sum(v for _, v in r.componentes), 1000, places=6)
+        self.assertAlmostEqual(r.aportes["Na"]["total"], 80, places=4)
+
+    def test_hoja_rol_8h(self):
+        ent = Entrada(peso_kg=12, talla_cm=85, metodo="SC", ml_m2=1100, rol_h=8,
+                      electrolitos={"K": Electrolito(True, "mEq/m²SC/día", 45)})
+        r = calcular(ent)
+        txt = hoja_rol(ent, r, "2.-")
+        self.assertIn("1100 ml/m2sc/día para rol de 8 horas", txt)
+        self.assertIn(f"Volumen total: {r.vol_total / 3:.0f} ml", txt)
+        self.assertIn("(45 mEq/m²SC/d)", txt)
+        self.assertIn("(GKM", txt)
+
+    def test_rol_24_neonato(self):
+        ent = Entrada(peso_kg=3.2, rol_h=24)
+        txt = hoja_rol(ent, calcular(ent))
+        self.assertIn("para 24 horas", txt)
 
 
 if __name__ == "__main__":
